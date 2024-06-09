@@ -65,7 +65,7 @@ class Animations:
 
     standing_dribble = {
         "path" : "lib/assets/player model/animations/right hand/r standing dribble-",
-        "right hand": listdir("lib/assets/player model/animations/right hand/r standing dribble-"),
+        "right hand": "lib/assets/player model/animations/right hand/r standing dribble-",
         "left hand" : listdir("lib/assets/player model/animations/left hand/l standing dribble-"),
         "animation_length" : len(listdir("lib/assets/player model/animations/right hand/r standing dribble-"))
         }
@@ -108,7 +108,7 @@ class Main_menu:
                     png = "lib/assets/player model/animations/right hand/r standing dribble-/" + str(Animations.standing_dribble["right hand"][animation_num])
                     player1.surface = pygame.image.load(png).convert_alpha()
                     pygame.display.update()
-
+        
 
         def change_animation(png):
             player1.surface = png
@@ -122,18 +122,17 @@ class Main_menu:
                         animation_num +=1
                         if animation_num +1 > Animations.standing_dribble["animation_length"]:
                             animation_num = 0
-                        png = pygame.image.load("lib/assets/player model/animations/right hand/r standing dribble-/" + str(Animations.standing_dribble["right hand"][animation_num]))
+                        png = pygame.image.load(str(Animations.standing_dribble[player1.ball_hand] + "/" + listdir(Animations.standing_dribble[player1.ball_hand])[animation_num]))
                         player1.surface = png
                         return animation_num 
                 elif True in movement_keys:
-                     
+                    
                     return 0 
                 else:
                     return 0 
         print(Animations.standing_dribble)
            
 
-                    
 
         while True:
 
