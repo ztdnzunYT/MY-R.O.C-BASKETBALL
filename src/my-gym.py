@@ -126,7 +126,7 @@ class Main_menu:
                         player1.surface = png
                         return animation_num 
                 elif True in movement_keys:
-                    
+                     
                     return 0 
                 else:
                     return 0 
