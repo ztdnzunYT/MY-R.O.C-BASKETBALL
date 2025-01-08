@@ -17,9 +17,6 @@ clock = pygame.time.Clock()
 fps = 50
 
 
-
-
-
 class Colors:
     BLACK = (0,0,0)
     GREY = (128,128,128)
@@ -44,10 +41,10 @@ class Buttons(pygame.sprite.Sprite):
         return font.render(text,True,col)
             
 class My_gym:
-    court_size = (800,800)
+    court_size = (800,720)
     court_png = pygame.transform.smoothscale(pygame.image.load("lib/assets/court/court png/sprite_0.png"),(court_size))
     court_rect = court_png.get_rect(center=(0,0))
-    court_rect.center = (SCREEN.get_width()/2,SCREEN.get_height()/2)
+    court_rect.center = (SCREEN.get_width()/2,SCREEN.get_height()/2-10)
     
 class Players(pygame.sprite.Sprite):
 
@@ -57,36 +54,54 @@ class Players(pygame.sprite.Sprite):
         self.surface = self.image
         self.rect = self.surface.get_rect(center=(self.surface.get_width()/2,self.surface.get_height()/2))
         self.ball_hand = "right hand"
-        self.animation_state = None
+        self.animation_state = Animations.standing_dribble
+        self.dribble_ready = True
         self.speed = speed
+        self.acceleration_speed = 2
         self.velocity = 0
+
+
 
 class Animations:
 
     standing_dribble = {
-        "path" : "lib/assets/player model/animations/right hand/r standing dribble-",
-        "right hand": "lib/assets/player model/animations/right hand/r standing dribble-",
-        "left hand" : listdir("lib/assets/player model/animations/left hand/l standing dribble-"),
-        "animation_length" : len(listdir("lib/assets/player model/animations/right hand/r standing dribble-"))
+        "right hand": "lib/assets/player model/animations/right hand/standing dribble-",
+        "left hand" : "lib/assets/player model/animations/left hand/standing dribble-",
+        "animation_length" : len(listdir("lib/assets/player model/animations/right hand/standing dribble-"))
         }
     
     walking_dribble = {
-        
+        "right hand": "lib/assets/player model/animations/right hand/walking dribble-",
+        "left hand" : "lib/assets/player model/animations/left hand/walking dribble-",
+        "animation_length" : len(listdir("lib/assets/player model/animations/right hand/walking dribble-"))
+        }
+    
+    squated_dribble = {
+        "right hand": "lib/assets/player model/animations/right hand/r squated dribble-",
+        "left hand" : "lib/assets/player model/animations/left hand/r squated dribble-",
+        "animation_length" : len(listdir("lib/assets/player model/animations/right hand/r squated dribble-"))
     }
-   
 
+    hezi = {
+        "right hand": "lib/assets/player model/animations/right hand/r hezi-",
+        "left hand" : "lib/assets/player model/animations/left hand/r hezi-",
+        "animation_length" : len(listdir("lib/assets/player model/animations/right hand/r hezi-"))
+    }
+    
 
+    
 
 class Main_menu:
+
  
     def play():
-        pygame.display.set_caption("My Gym")
         player1 = Players("r",1)
         player1.rect.x = My_gym.court_rect.width/2 - 150
         player1.rect.y = SCREEN.get_height()/2
 
         animation_num = 0
         last_key_pressed = []
+        dribble_move = False
 
         def move(direction):
             player1.velocity = random.randint(13,15)
@@ -98,68 +113,10 @@ class Main_menu:
                 player1.rect.y -= player1.speed
             if direction == "s":
                 player1.rect.y += player1.speed
-
- 
-        def test(key):
-
-            if True not in movement_keys and player1.velocity == 0 :
-                print("False in side")
-                for animation_num in range(len(Animations.idle["right hand"])):
-                    png = "lib/assets/player model/animations/right hand/r standing dribble-/" + str(Animations.standing_dribble["right hand"][animation_num])
-                    player1.surface = pygame.image.load(png).convert_alpha()
-                    pygame.display.update()
-        
-
-        def change_animation(png):
-            player1.surface = png
-
-        def animate(animation_num):
-           
-            if player1.ball_hand == "right hand":
-                if True not in movement_keys and player1.velocity == 0:
-                    player1.animation_state = Animations.standing_dribble
-                    if player1.animation_state == Animations.standing_dribble:
-                        animation_num +=1
-                        if animation_num +1 > Animations.standing_dribble["animation_length"]:
-                            animation_num = 0
-                        png = pygame.image.load(str(Animations.standing_dribble[player1.ball_hand] + "/" + listdir(Animations.standing_dribble[player1.ball_hand])[animation_num]))
-                        player1.surface = png
-                        return animation_num 
-                elif True in movement_keys:
-                    
-                    return 0 
-                else:
-                    return 0 
-        print(Animations.standing_dribble)
-           
-
-
-        while True:
-
-            clock.tick(fps)
-            mouse_pointer = pygame.mouse.get_pos()
-
-            SCREEN.blit(My_gym.court_png,My_gym.court_rect)
-            SCREEN.blit(player1.surface,player1.rect)
-
-            keys = pygame.key.get_pressed()
-            movement_keys = [keys[pygame.K_w],keys[pygame.K_s],keys[pygame.K_a],keys[pygame.K_d]]
-
-            if keys[pygame.K_w]:
-                move("w")
-                #animate("w")
-            if keys[pygame.K_s]:
-                move("s")
-            if keys[pygame.K_a]:
-                move("a")
-            if keys[pygame.K_d]:
-                move("d")
-
-            animation_num = animate(animation_num)
             
-
-        
             
+        def decelerate():
+            print(last_key_pressed)
             if player1.velocity > .5 and "a" in last_key_pressed:
                 player1.velocity -=1
                 player1.rect.x -=1
@@ -172,8 +129,86 @@ class Main_menu:
             if player1.velocity > .5 and "s" in last_key_pressed:
                 player1.velocity -=1
                 player1.rect.y +=1
+            if keys[pygame.K_m] and "m" not in last_key_pressed and player1.acceleration_speed < 1:
+                player1.acceleration_speed = 1
+            if player1.acceleration_speed > 0.5 and "m" in last_key_pressed:
+                player1.rect.x +=2
+                player1.acceleration_speed -=.05
+            print(player1.acceleration_speed)    
+        
+                
+        def play_animation(animation_num,pngs):
+            animation_num +=1  
+            if animation_num == pngs["animation_length"]:
+                player1.dribble_ready == True
+            else:
+                player1.dribble_ready == False
+            if animation_num +1 > pngs["animation_length"]:
+                animation_num = 0
+          
+                
+                
+        
+            player1.surface = pygame.transform.smoothscale(pygame.image.load(str(pngs[player1.ball_hand]) + "/" + listdir(pngs[player1.ball_hand])[animation_num]),(200,200))
+            return animation_num
+        
+        def animate(animation_num):
+            if player1.ball_hand == "right hand": 
+                if True not in movement_keys and player1.velocity == 0 and keys[pygame.K_LSHIFT] == False :
+                    if player1.dribble_ready == True:
+                        player1.animation_state = Animations.standing_dribble
+                elif True not in movement_keys and keys[pygame.K_LSHIFT]:
+                    if player1.dribble_ready == True:
+                        if keys[pygame.K_LSHIFT] == True:
+                            player1.animation_state = Animations.squated_dribble
+                elif True in movement_keys and keys[pygame.K_w] or keys[pygame.K_s]:
+                    if player1.dribble_ready == True:
+                        player1.animation_state = Animations.walking_dribble
+                
+                
+                
+               
+
+            return play_animation(animation_num,player1.animation_state)
+
+          
+
+        while True:
+
+            clock.tick(fps)
+            mouse_pointer = pygame.mouse.get_pos()
+
+            SCREEN.blit(My_gym.court_png,My_gym.court_rect)
+            SCREEN.blit(player1.surface,player1.rect)
+
+            keys = pygame.key.get_pressed()
+            movement_keys = [keys[pygame.K_w],keys[pygame.K_s],keys[pygame.K_a],keys[pygame.K_d]]
+            dribble_move_keys = [keys[pygame.K_m]]
+
+            if keys[pygame.K_w]:
+                move("w")
+            if keys[pygame.K_s]:
+                move("s")
+            if keys[pygame.K_a]:
+                move("a")
+            if keys[pygame.K_d]:
+                move("d")
+
+    
+            decelerate()
+
+            animation_num = animate(animation_num)
             
             
+        
+            
+            
+            
+
+
+
+
+
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
