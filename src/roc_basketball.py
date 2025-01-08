@@ -1,7 +1,9 @@
 import pygame
 import sys
 import os 
+import math
 
+import pygame.macosx
 # Initialize Pygame
 pygame.init()
 pygame.mixer.init()
@@ -17,22 +19,33 @@ clock = pygame.time.Clock()
 font =  pygame.font.Font("lib/assets/fonts/pixellari/Pixellari.ttf",20)
 game_state = "loadup_screen"
 
-
-
 class Music():
     souls_of_mischief = pygame.mixer.Sound("lib/assets/music/Souls Of Mischief - 93 'Til Infinity.mp3")
+    whatever_you_like = pygame.mixer.Sound("lib/assets/music/Whatever You Like.mp3")
+    rocketeer = pygame.mixer.Sound("lib/assets/music/Far_East_Movement_Ryan_Tedder_-_Rocketeer_Lyrics_128kbps.mp3")
+    hood_gone_love_it = pygame.mixer.Sound("lib/assets/music/Hood_Gone_Love_It_feat._Kendrick_Lamar_128kbps.mp3")
+    hate_it_or_love_it =pygame.mixer.Sound("lib/assets/music/The_Game_50_Cent_-_Hate_It_Or_Love_It_Official_Music_Video_128kbps.mp3")
 
 Music.souls_of_mischief.set_volume(0.2)
-Music.souls_of_mischief.play()
+#Music.souls_of_mischief.play()
+Music.whatever_you_like.set_volume(0.1)
+#Music.whatever_you_like.play()
+Music.rocketeer.set_volume(0.1)
+#Music.rocketeer.play()
+Music.hood_gone_love_it.set_volume(0.1)
+#Music.hood_gone_love_it.play()
+Music.hate_it_or_love_it.set_volume(0.1)
+Music.hate_it_or_love_it.play()
 
 class Loadup_screen():
     direction = -1
     delay_time = 50
     timer = pygame.time.get_ticks()
+    loop = 0
 
     transparency = 0
     key_space_pressed = False
-    prompt_transparency = 0
+    prompt_transparency = 255
 
     background_surface = pygame.Surface((WIDTH,HEIGHT),pygame.SRCALPHA)
     transition_surface = pygame.Surface((WIDTH,HEIGHT),pygame.SRCALPHA)
@@ -51,20 +64,20 @@ class Loadup_screen():
         font1 = pygame.font.Font("lib/assets/fonts/pixellari/Pixellari.ttf",80)
         font2 = pygame.font.Font("lib/assets/fonts/pixellari/Pixellari.ttf",30)
         title_text = font1.render("Roc Basketball",True,(255,255,255))
-        title_rect = title_text.get_rect(center=(WIDTH/2,HEIGHT/2))
+        title_rect = title_text.get_rect(center=(WIDTH/2,HEIGHT/2-25))
 
         button_prompt = font2.render("Press X or space to continue",True,(255,255,255,255))
-        button_prompt_rect = button_prompt.get_rect(center=(WIDTH/2,HEIGHT/1.5))
+        button_prompt_rect = button_prompt.get_rect(center=(WIDTH/2,HEIGHT/1.5-25))
 
         button_alpha_surface = pygame.Surface((button_prompt.get_size()),pygame.SRCALPHA)
         button_alpha_surface.fill((0,0,0,0))
         
-        pygame.draw.rect(screen,(255,255,255),(title_rect.left,HEIGHT/1.80,title_rect.size[0],2))
+        pygame.draw.rect(screen,(255,255,255),(title_rect.left,HEIGHT/1.80-25,title_rect.size[0],2))
 
         screen.blit(title_text,title_rect)
         
         button_alpha_surface.blit(button_prompt,(0,0))
-        button_alpha_surface.set_alpha(120)
+        button_alpha_surface.set_alpha(Loadup_screen.prompt_transparency)
         screen.blit(button_alpha_surface,(button_prompt_rect))
 
         current_time = pygame.time.get_ticks()
@@ -85,19 +98,23 @@ class Loadup_screen():
                 
                 if loadup_screen.background_rect.x  == 0:
                     Loadup_screen.direction = -1 
+                    
+         
         
         if keys[pygame.K_SPACE]:
             Loadup_screen.key_space_pressed = True
             
         if Loadup_screen.key_space_pressed == True:
+            Main_menu.Ui_sounds.startup_sound.play()
             Loadup_screen.transparency +=1
             if Loadup_screen.transparency == 255:
+                
                 game_state = "main_menu"
 
         pygame.draw.rect(Loadup_screen.transition_surface,(0,0,0,Loadup_screen.transparency),(0,0,WIDTH,HEIGHT))
         screen.blit(Loadup_screen.transition_surface,(0,0))
-        
 
+        
 
             
             
@@ -109,6 +126,7 @@ class Main_menu():
 
     class Ui_sounds():
         ui_slide = pygame.mixer.Sound("lib/assets/ui_sounds/ui_slide.mp3")
+        startup_sound = pygame.mixer.Sound("lib/assets/ui_sounds/soft-startup-sound-269291.mp3")
 
     class Windows():
 
@@ -241,6 +259,9 @@ while running:
 
 
     if game_state == "loadup_screen":
+        Loadup_screen.loop +=0.01
+        x = round (120 * (math.sin(Loadup_screen.loop)*2))
+        Loadup_screen.prompt_transparency = x + 200
         Loadup_screen.draw_screen()
 
     if game_state == "main_menu":
