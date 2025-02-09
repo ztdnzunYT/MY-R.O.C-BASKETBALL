@@ -2,8 +2,9 @@ import pygame
 import sys
 import os 
 import math
-
+import random
 import pygame.macosx
+  
 # Initialize Pygame
 pygame.init()
 pygame.mixer.init()
@@ -17,29 +18,66 @@ gray_cement = (129,129,129)
 blue = (20,30,120)
 clock = pygame.time.Clock()
 font =  pygame.font.Font("lib/assets/fonts/pixellari/Pixellari.ttf",20)
-game_state = "loadup_screen"
+game_state = "My Gym"
+FPS = 120
 
 class Music():
+    
     souls_of_mischief = pygame.mixer.Sound("lib/assets/music/Souls Of Mischief - 93 'Til Infinity.mp3")
     whatever_you_like = pygame.mixer.Sound("lib/assets/music/Whatever You Like.mp3")
     rocketeer = pygame.mixer.Sound("lib/assets/music/Far_East_Movement_Ryan_Tedder_-_Rocketeer_Lyrics_128kbps.mp3")
     hood_gone_love_it = pygame.mixer.Sound("lib/assets/music/Hood_Gone_Love_It_feat._Kendrick_Lamar_128kbps.mp3")
-    hate_it_or_love_it =pygame.mixer.Sound("lib/assets/music/The_Game_50_Cent_-_Hate_It_Or_Love_It_Official_Music_Video_128kbps.mp3")
+    hate_it_or_love_it = pygame.mixer.Sound("lib/assets/music/The_Game_50_Cent_-_Hate_It_Or_Love_It_Official_Music_Video_128kbps.mp3")
+    hardway = pygame.mixer.Sound("lib/assets/music/Derez_Deshon_-_Hardaway_Official_Lyric_Video_128kbps.mp3")
+    wanna_be_a_baller = pygame.mixer.Sound("lib/assets/music/Wanna_Be_A_Baller_128kbps.mp3")
+    starships = pygame.mixer.Sound("lib/assets/music/Nicki_Minaj_-_Starships_Clean_-_Lyrics_128kbps.mp3")
+    young_ma = pygame.mixer.Sound("lib/assets/music/OOOUUU_128kbps.mp3")
+    i_choose_you = pygame.mixer.Sound("lib/assets/music/UGK_ft._Outkast_-_Int_l_Players_Anthem_I_Choose_You_Official_Audio_128kbps.mp3")
 
-Music.souls_of_mischief.set_volume(0.2)
-#Music.souls_of_mischief.play()
-Music.whatever_you_like.set_volume(0.1)
-#Music.whatever_you_like.play()
-Music.rocketeer.set_volume(0.1)
-#Music.rocketeer.play()
-Music.hood_gone_love_it.set_volume(0.1)
-#Music.hood_gone_love_it.play()
-Music.hate_it_or_love_it.set_volume(0.1)
-Music.hate_it_or_love_it.play()
+    songs = [souls_of_mischief,whatever_you_like,rocketeer,hood_gone_love_it,hate_it_or_love_it,hardway,wanna_be_a_baller]
 
+
+class Enviornment_sounds():
+    sound_length = None
+    channel1 = pygame.mixer.Channel(1)
+    channel1.set_volume(0.1)
+
+    park_ambience = pygame.mixer.Sound("lib/assets/enviornment_sounds/Afternoon_in_Suburban_Backyard_2 (mp3cut.net).mp3")
+    ac_ambience = pygame.mixer.Sound("lib/assets/enviornment_sounds/Virtual_Air_Conditioner_1_Hour_128kbps (mp3cut.net).mp3")
+
+    all_sounds = [park_ambience,ac_ambience]
+
+Enviornment_sounds.park_ambience.set_volume(0.5)
+Enviornment_sounds.park_ambience.play(loops=-1)
+
+#song = random.choice(Music.songs)
+song = Music.souls_of_mischief
+#print(song.__getattribute__)
+song.set_volume(0.1)
+song.play()
+
+
+class Transition_screen():
+    transition_surface = pygame.Surface((WIDTH,HEIGHT),pygame.SRCALPHA)
+    clicked = False
+    transpacrency = 0
+
+    def draw_screen():
+        global game_state
+        Transition_screen.transpacrency +=1
+        pygame.draw.rect(Transition_screen.transition_surface,(0,0,0,Transition_screen.transpacrency),(0,0,WIDTH,HEIGHT))
+        screen.blit(Transition_screen.transition_surface,(0,0))
+
+        if Transition_screen.transpacrency == 255:
+            for num,window in enumerate(Main_menu.Windows.select_windows):
+                if num == Main_menu.Windows.current_window_num:
+                    game_state = window.text
+            Transition_screen.clicked = False
+            Transition_screen.transpacrency = 0
+            
 class Loadup_screen():
     direction = -1
-    delay_time = 50
+    delay_time = 60
     timer = pygame.time.get_ticks()
     loop = 0
 
@@ -66,7 +104,7 @@ class Loadup_screen():
         title_text = font1.render("Roc Basketball",True,(255,255,255))
         title_rect = title_text.get_rect(center=(WIDTH/2,HEIGHT/2-25))
 
-        button_prompt = font2.render("Press X or space to continue",True,(255,255,255,255))
+        button_prompt = font2.render("Press x or space to continue",True,(255,255,255,255))
         button_prompt_rect = button_prompt.get_rect(center=(WIDTH/2,HEIGHT/1.5-25))
 
         button_alpha_surface = pygame.Surface((button_prompt.get_size()),pygame.SRCALPHA)
@@ -99,41 +137,44 @@ class Loadup_screen():
                 if loadup_screen.background_rect.x  == 0:
                     Loadup_screen.direction = -1 
                     
-         
-        
         if keys[pygame.K_SPACE]:
             Loadup_screen.key_space_pressed = True
+         
             
         if Loadup_screen.key_space_pressed == True:
             Main_menu.Ui_sounds.startup_sound.play()
             Loadup_screen.transparency +=1
+           
             if Loadup_screen.transparency == 255:
-                
                 game_state = "main_menu"
 
         pygame.draw.rect(Loadup_screen.transition_surface,(0,0,0,Loadup_screen.transparency),(0,0,WIDTH,HEIGHT))
         screen.blit(Loadup_screen.transition_surface,(0,0))
 
-        
-
-            
-            
-
-
-      
+        Loadup_screen.loop +=0.01
+        x = round (120 * (math.sin(Loadup_screen.loop)*2))
+        Loadup_screen.prompt_transparency = x + 200
 
 class Main_menu():
 
     class Ui_sounds():
+        clicked = False
         ui_slide = pygame.mixer.Sound("lib/assets/ui_sounds/ui_slide.mp3")
+        ui_select = pygame.mixer.Sound("lib/assets/ui_sounds/button-124476 (mp3cut.net).mp3")
         startup_sound = pygame.mixer.Sound("lib/assets/ui_sounds/soft-startup-sound-269291.mp3")
 
     class Windows():
-
+        select_windows = []
         delay_time = 100
         timer = pygame.time.get_ticks()
+        current_window_num = 0
+        
+        background_surf = pygame.Surface((WIDTH,HEIGHT),pygame.SRCALPHA)
+        background_surf_rect = background_surf.get_rect(topleft=(0,0))
 
-        current_window_num = 0 
+        transition_surface = pygame.Surface((WIDTH,HEIGHT),pygame.SRCALPHA)
+        transparency = 0
+        clicked = False
 
         def __init__(self,x,y,width,length,text,background_image,scale):
             super(Main_menu.Windows,self).__init__()
@@ -148,26 +189,29 @@ class Main_menu():
             self.background_image = pygame.transform.smoothscale(pygame.image.load(background_image).convert_alpha(),(scale))
             self.background_rect = self.background_image.get_rect()
 
-        background_surf = pygame.Surface((WIDTH,HEIGHT),pygame.SRCALPHA)
-        background_surf_rect = background_surf.get_rect(topleft=(0,0))
-
         def draw_menu():
             current_time = pygame.time.get_ticks()
             keys = pygame.key.get_pressed()
-
             
             if current_time > Main_menu.Windows.timer:
                 Main_menu.Windows.timer = current_time + Main_menu.Windows.delay_time 
 
                 if keys[pygame.K_d]:
                     Main_menu.Ui_sounds.ui_slide.play()
-
+                    
                     if Main_menu.Windows.current_window_num > len(Main_menu.Windows.select_windows)-2:
                         Main_menu.Windows.current_window_num = 0
                     else:
-                        
                         Main_menu.Windows.current_window_num +=1
-
+                
+                elif keys[pygame.K_a]:
+                    Main_menu.Ui_sounds.ui_slide.play()
+                    
+                    if Main_menu.Windows.current_window_num < 1:
+                        Main_menu.Windows.current_window_num = 4
+                    else:
+                        Main_menu.Windows.current_window_num -=1
+                    
 
             #pygame.draw.rect(Main_menu.Windows.background_surf,(0,0,0,0),(0,0,WIDTH,HEIGHT))
 
@@ -181,36 +225,155 @@ class Main_menu():
                     Main_menu.Windows.select_windows[num].transparency = min(Main_menu.Windows.select_windows[num].transparency+2,150)
                 else:
                     Main_menu.Windows.select_windows[num].transparency = max(Main_menu.Windows.select_windows[num].transparency-2,110)
+
             pygame.draw.rect(Main_menu.Windows.background_surf,(0,0,0,150),(23,65,WIDTH-50,2),border_radius=3)
             screen.blit(Main_menu.Windows.background_surf,Main_menu.Windows.background_surf_rect)
 
             for window in Main_menu.Windows.select_windows:
                 screen.blit(window.text_surf,(window.rect[0]+10,window.rect[1]+10))
             screen.blit(my_roc_text,(25,40))
-            
-           
 
-        select_windows = []
+            pygame.draw.rect(Main_menu.Windows.transition_surface,(0,0,0,Main_menu.Windows.transparency),(0,0,WIDTH,HEIGHT))
+            screen.blit(Main_menu.Windows.transition_surface,(0,0))
+        
+            if Transition_screen.clicked == True:
+                Transition_screen.draw_screen()
+
+        '''
+        def menu_select():
+            global game_state
+            keys = pygame.key.get_pressed()
+            for num,window in enumerate(Main_menu.Windows.select_windows):
+                if Main_menu.Windows.current_window_num == num and keys[pygame.K_SPACE]:
+                    Main_menu.Windows.clicked = True
+            
+                game_state = window.text
+        '''
 
 class My_roc_gym():
-    def __init__(self,image):
-        super(My_roc_gym,self).__init__()
-        self.court_png = image
-        self.surf = pygame.image.load(image).convert_alpha()
-        self.size = self.surf.get_size()
-        self.scale_size = 4
-        self.scaled_surf = pygame.transform.smoothscale(self.surf,(self.size[0]/self.scale_size,self.size[1]/self.scale_size))
-        self.scaled_surf_size = self.scaled_surf.get_size()
-        self.rect = self.surf.get_rect(center=(0,0))
 
-    def split_court():
-        pass
-
+    scale = 1.2
     
+    delay_time = 10
+    timer = pygame.time.get_ticks()
+    x_start_pos = 300
+    y_start_pos = 150
+
     court_sections = []
 
-my_roc_gym = My_roc_gym("lib/assets/my_roc_gym/surface_court.png")
+    background_surf = pygame.Surface((WIDTH,HEIGHT),pygame.SRCALPHA)
+    background_surf_rect = background_surf.get_rect(topleft=(0,0))
 
+    goal_image = pygame.image.load("lib/assets/my_roc_gym/my_gym_goal.png").convert_alpha()
+    goal = pygame.transform.smoothscale(goal_image,(goal_image.get_size()[0]/scale,goal_image.get_size()[1]/scale))
+    goal_rect = goal.get_rect(topleft=(-x_start_pos,-y_start_pos))
+
+    front_goal_image = pygame.image.load("lib/assets/my_roc_gym/my_gym_front_rim.png").convert_alpha()
+    front_goal = pygame.transform.smoothscale(front_goal_image,(front_goal_image.get_size()[0]/scale,front_goal_image.get_size()[1]/scale))
+    front_goal_rect = front_goal.get_rect(topleft=(-x_start_pos,-y_start_pos-1))
+
+    basket_rack_image = pygame.image.load("lib/assets/my_roc_gym/basket_rack.png").convert_alpha()
+    basket_rack = pygame.transform.smoothscale(basket_rack_image,(basket_rack_image.get_size()[0]/2,basket_rack_image.get_size()[1]/2))
+    basket_rack_rect = basket_rack.get_rect(topleft=(-x_start_pos+90,-y_start_pos+20))
+   
+    def __init__(self,background_image,court_image,scale,fov):
+        super(My_roc_gym,self).__init__()
+        self.scale = scale
+        self.fov = fov
+        self.original_image = pygame.image.load(background_image)
+        self.background_image = pygame.image.load(background_image)
+        self.background_image = pygame.transform.smoothscale(pygame.image.load(background_image).convert_alpha(),
+            (self.background_image.get_size()[0]/self.scale,self.background_image.get_size()[1]/self.scale))
+        self.court_image = court_image
+        self.background_rect = self.background_image.get_rect(topleft=(-My_roc_gym.x_start_pos,-My_roc_gym.y_start_pos))
+
+    def draw_gym():
+        current_time = pygame.time.get_ticks()
+        
+        screen.blit(my_roc_gym_background.background_image,my_roc_gym_background.background_rect)
+        
+        screen.blit(My_roc_gym.goal,My_roc_gym.goal_rect)
+        
+        screen.blit(My_roc_gym.front_goal,My_roc_gym.front_goal_rect)    
+        screen.blit(My_roc_gym.basket_rack,My_roc_gym.basket_rack_rect)
+        
+        if current_time > My_roc_gym.timer:
+            #my_roc_gym_background.background_rect.x -=1
+            My_roc_gym.timer = current_time + My_roc_gym.delay_time
+
+        #pygame.draw.rect(screen,(255,0,0),(200,250,20,20))
+    
+    class Player():
+        
+        def __init__(self,build,rect,player_image,player_speed):
+            self.build = build
+            self.surface = pygame.Surface((50,50),pygame.SRCALPHA)
+            self.rect_size = None
+            self.rect = rect
+            self.x = self.rect[0]
+            self.y = self.rect[1]
+            self.animation_number = None
+            self.scale = My_roc_gym.scale
+            self.direction = -1
+            self.player_speed = player_speed
+            self.max_speed = 1.3
+            self.acceleration = 0
+        
+            self.player_image = pygame.image.load(player_image).convert_alpha()
+            self.player_image = pygame.transform.smoothscale(self.player_image,(self.player_image.get_size()[0]/1.5,self.player_image.get_size()[1]/1.5))
+        
+        def draw():
+
+            pygame.draw.ellipse(player.surface,(0,0,0,130),(0,0,35,21))
+            
+            screen.blit(player.surface,(player.x+player.player_image.get_size()[0]-102,player.y+player.player_image.get_size()[1]-18))
+            screen.blit(player.player_image,(player.x,player.y))
+
+            keys = pygame.key.get_pressed()
+
+            if keys[pygame.K_LSHIFT]:
+                player.player_speed = min(player.player_speed + .01,player.max_speed)
+            else:
+                player.player_speed = max(player.player_speed - .01,1)
+
+            if keys[pygame.K_d]:
+                player.x += player.player_speed
+
+            if keys[pygame.K_a]:
+                player.x -= player.player_speed
+            
+            if keys[pygame.K_w]:
+                player.y -= player.player_speed
+
+            if keys[pygame.K_s]:
+                player.y += player.player_speed
+
+            #print(player.player_speed)
+
+    class Camera():
+        fov = 100
+        offset = 0 
+        distance = 0
+        center = WIDTH/2 
+
+        time_delay = 400
+        timer = pygame.time.get_ticks()
+
+        def get_offset():
+            keys = pygame.key.get_pressed()
+            current_time = pygame.time.get_ticks()
+
+            if current_time > My_roc_gym.Camera.timer :
+                My_roc_gym.Camera.timer = current_time + My_roc_gym.Camera.time_delay
+
+                My_roc_gym.Camera.distance = (int(player.x - My_roc_gym.Camera.center))
+                if My_roc_gym.Camera.offset < My_roc_gym.Camera.distance:
+                    My_roc_gym.Camera.offset -=2
+                if My_roc_gym.Camera.offset > My_roc_gym.Camera.distance:
+                    My_roc_gym.Camera.offset +=2
+                    
+            
+'''
 region = pygame.Rect(0,0,320,110)
 square1 = my_roc_gym.scaled_surf.subsurface(region)
 
@@ -218,25 +381,25 @@ basket_image = pygame.image.load("lib/assets/my_roc_gym/basket.png").convert_alp
 basket_size = basket_image.get_size()
 basket = pygame.transform.smoothscale(basket_image,(basket_size[0]/4,basket_size[1]/4))
 basket_rect = basket.get_rect()
+'''
 
-move=0
-
-rect = pygame.Rect(200,200,20,20)
-
-
-
+rect = pygame.Rect(My_roc_gym.x_start_pos+235,My_roc_gym.y_start_pos-30,20,20)
 
 loadup_screen = Loadup_screen("lib/assets/menu_backgrounds/loadup_background.png")
-
-my_roc_text = font.render("Roc Basketball",True,(255,255,255))
+my_roc_text = font.render("My Roc",True,(255,255,255))
 my_roc_rect = my_roc_text.get_rect(center=(0,0))
 settings_window = Main_menu.Windows(20,80,170,160,"Settings","lib/assets/menu_backgrounds/gear_background.png",(1300,700))
 roster_window = Main_menu.Windows(210,80,170,160,"Roster","lib/assets/menu_backgrounds/roster_background.png" ,(1300,700))
-my_roc_window = Main_menu.Windows(20,260,360,150,"My Roc","lib/assets/menu_backgrounds/my_roc_background.png",(1300,700))
+my_roc_window = Main_menu.Windows(20,260,360,150,"My Gym","lib/assets/menu_backgrounds/my_roc_background.png",(1300,700))
 my_season_window = Main_menu.Windows(400,80,180,330,"My Season","lib/assets/menu_backgrounds/my_season_background.png",(1300,700))
 the_roc_window = Main_menu.Windows(600,80,180,330,"The Roc","lib/assets/menu_backgrounds/the_roc_background.png",(1300,700))
 
 Main_menu.Windows.select_windows = [settings_window,roster_window,my_roc_window,my_season_window,the_roc_window,]
+
+my_roc_gym_background = My_roc_gym("lib/assets/my_roc_gym/my_gym_background.png",None,My_roc_gym.scale,My_roc_gym.Camera.fov)
+
+player = My_roc_gym.Player(None,(My_roc_gym.x_start_pos-200,My_roc_gym.y_start_pos,20,20),"lib/assets/my_roc_gym/player_example.png",1)
+
 
 # Game loop
 running = True
@@ -250,31 +413,33 @@ while running:
     #pygame.draw.rect(screen,(0,0,0),rect,2)
     #screen.blit(basket,(-660,-200))
 
-    
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_d]:
-        rect.x +=1
-    if keys[pygame.K_a]:
-        rect.x -=1
-
-
     if game_state == "loadup_screen":
-        Loadup_screen.loop +=0.01
-        x = round (120 * (math.sin(Loadup_screen.loop)*2))
-        Loadup_screen.prompt_transparency = x + 200
         Loadup_screen.draw_screen()
 
     if game_state == "main_menu":
         Main_menu.Windows.draw_menu()
-
+       
+    if game_state == "My Gym":
+        My_roc_gym.draw_gym()
+        pygame.draw.rect(screen,(0,0,0),rect,width=2)
+        My_roc_gym.Player.draw()
+        My_roc_gym.Camera.get_offset()
+    
 
     pygame.display.flip()
 
-    clock.tick(120)
+    clock.tick(FPS)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+
+        if game_state == "main_menu":
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    Main_menu.Ui_sounds.ui_select.set_volume(0.3)
+                    Main_menu.Ui_sounds.ui_select.play()
+                    Transition_screen.clicked = True
 
     
 
