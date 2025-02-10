@@ -18,7 +18,7 @@ gray_cement = (129,129,129)
 blue = (20,30,120)
 clock = pygame.time.Clock()
 font =  pygame.font.Font("lib/assets/fonts/pixellari/Pixellari.ttf",20)
-game_state = "My Gym"
+game_state = "loadup_screen"
 FPS = 120
 
 class Music():
@@ -54,7 +54,7 @@ Enviornment_sounds.park_ambience.play(loops=-1)
 song = Music.souls_of_mischief
 #print(song.__getattribute__)
 song.set_volume(0.1)
-#song.play()
+song.play()
 
 
 class Transition_screen():
@@ -501,11 +501,7 @@ Main_menu.Windows.select_windows = [settings_window,roster_window,my_roc_window,
 
 my_roc_gym_background = My_roc_gym("lib/assets/my_roc_gym/my_gym_background.png",None,My_roc_gym.scale,My_roc_gym.Camera.fov)
 
-
 player = My_roc_gym.Player(None,(My_roc_gym.x_start_pos-200,My_roc_gym.y_start_pos,20,20),"lib/assets/my_roc_gym/player_example.png",1)
-
-
-
 
 
 # Game loop
