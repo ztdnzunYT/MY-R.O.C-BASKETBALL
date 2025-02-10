@@ -18,7 +18,7 @@ gray_cement = (129,129,129)
 blue = (20,30,120)
 clock = pygame.time.Clock()
 font =  pygame.font.Font("lib/assets/fonts/pixellari/Pixellari.ttf",20)
-game_state = "loadup_screen"
+game_state = "My Gym"
 FPS = 120
 
 class Music():
@@ -36,7 +36,6 @@ class Music():
 
     songs = [souls_of_mischief,whatever_you_like,rocketeer,hood_gone_love_it,hate_it_or_love_it,hardway,wanna_be_a_baller]
 
-
 class Enviornment_sounds():
     sound_length = None
     channel1 = pygame.mixer.Channel(1)
@@ -46,16 +45,6 @@ class Enviornment_sounds():
     ac_ambience = pygame.mixer.Sound("lib/assets/enviornment_sounds/Virtual_Air_Conditioner_1_Hour_128kbps (mp3cut.net).mp3")
 
     all_sounds = [park_ambience,ac_ambience]
-
-Enviornment_sounds.park_ambience.set_volume(0.5)
-Enviornment_sounds.park_ambience.play(loops=-1)
-
-#song = random.choice(Music.songs)
-song = Music.souls_of_mischief
-#print(song.__getattribute__)
-song.set_volume(0.1)
-song.play()
-
 
 class Transition_screen():
     transition_surface = pygame.Surface((WIDTH,HEIGHT),pygame.SRCALPHA)
@@ -399,9 +388,9 @@ class My_roc_gym():
             #print(keys)
 
             if keys[pygame.K_LSHIFT]:
-                player.player_speed = min(player.player_speed + .001,player.max_speed)
+                player.player_speed = min(player.player_speed + .002,player.max_speed)
             else:
-                player.player_speed = max(player.player_speed - .001,1)
+                player.player_speed = max(player.player_speed - .002,1)
 
             if keys[pygame.K_d]:
                 player.x_direction = 1
@@ -439,43 +428,38 @@ class My_roc_gym():
                 pass
             else:
                 player.current_anmimation = player.animation_list[1]
-           
-            
-            
-
-            
-            
-            
 
             #print(player.player_speed)
         
-        
-            
-    
-
     class Camera():
+        x_center = WIDTH/2 
+        y_center = HEIGHT/2
         fov = 100
-        offset = 0 
+        x_offset = 0 
+        y_offset = 0  
         distance = 0
-        center = WIDTH/2 
+        size = 20
+        
+        rect = pygame.Rect(x_offset)
 
         time_delay = 400
         timer = pygame.time.get_ticks()
 
+        def draw_rect():
+            pass
+
+
         def get_offset():
-            keys = pygame.key.get_pressed()
+
             current_time = pygame.time.get_ticks()
 
             if current_time > My_roc_gym.Camera.timer :
                 My_roc_gym.Camera.timer = current_time + My_roc_gym.Camera.time_delay
 
-                My_roc_gym.Camera.distance = (int(player.x - My_roc_gym.Camera.center))
-                if My_roc_gym.Camera.offset < My_roc_gym.Camera.distance:
-                    My_roc_gym.Camera.offset -=2
-                if My_roc_gym.Camera.offset > My_roc_gym.Camera.distance:
-                    My_roc_gym.Camera.offset +=2
+        
+
+
                     
-            
 '''
 region = pygame.Rect(0,0,320,110)
 square1 = my_roc_gym.scaled_surf.subsurface(region)
@@ -486,7 +470,16 @@ basket = pygame.transform.smoothscale(basket_image,(basket_size[0]/4,basket_size
 basket_rect = basket.get_rect()
 '''
 
-rect = pygame.Rect(My_roc_gym.x_start_pos+235,My_roc_gym.y_start_pos-30,20,20)
+Enviornment_sounds.park_ambience.set_volume(0.5)
+Enviornment_sounds.park_ambience.play(loops=-1)
+
+#song = random.choice(Music.songs)
+song = Music.souls_of_mischief
+#print(song.__getattribute__)
+song.set_volume(0.1)
+#song.play()
+
+camera_rect = pygame.Rect(WIDTH/2,HEIGHT,20,20)
 
 loadup_screen = Loadup_screen("lib/assets/menu_backgrounds/loadup_background.png")
 my_roc_text = font.render("My Roc",True,(255,255,255))
@@ -502,7 +495,6 @@ Main_menu.Windows.select_windows = [settings_window,roster_window,my_roc_window,
 my_roc_gym_background = My_roc_gym("lib/assets/my_roc_gym/my_gym_background.png",None,My_roc_gym.scale,My_roc_gym.Camera.fov)
 
 player = My_roc_gym.Player(None,(My_roc_gym.x_start_pos-200,My_roc_gym.y_start_pos,20,20),"lib/assets/my_roc_gym/player_example.png",1)
-
 
 # Game loop
 running = True
@@ -524,15 +516,13 @@ while running:
        
     if game_state == "My Gym":
         My_roc_gym.draw_gym()
-        pygame.draw.rect(screen,(0,0,0),rect,width=2)
+        
         #My_roc_gym.Player.set_animation()
         My_roc_gym.Player.draw()
-        
         My_roc_gym.Player.move()
         My_roc_gym.Camera.get_offset()
         
     
-
     pygame.display.flip()
 
     clock.tick(FPS)/ 1000.0
