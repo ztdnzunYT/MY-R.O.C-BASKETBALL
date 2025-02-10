@@ -54,7 +54,7 @@ Enviornment_sounds.park_ambience.play(loops=-1)
 song = Music.souls_of_mischief
 #print(song.__getattribute__)
 song.set_volume(0.1)
-song.play()
+#song.play()
 
 
 class Transition_screen():
@@ -305,7 +305,7 @@ class My_roc_gym():
     
     class Player():
         
-        def __init__(self,build,rect,player_image,player_speed):
+        def __init__(self,build,rect,animation,player_speed):
             self.build = build
             self.surface = pygame.Surface((50,50),pygame.SRCALPHA)
             self.rect_size = None
@@ -314,41 +314,144 @@ class My_roc_gym():
             self.y = self.rect[1]
             self.animation_number = None
             self.scale = My_roc_gym.scale
-            self.direction = -1
+            self.x_direction = -1
+            self.y_direction = -1
             self.player_speed = player_speed
-            self.max_speed = 1.3
+            self.x_velocity = 0
+            self.y_velocity = 0
+            self.max_speed = 1.4
             self.acceleration = 0
-        
-            self.player_image = pygame.image.load(player_image).convert_alpha()
-            self.player_image = pygame.transform.smoothscale(self.player_image,(self.player_image.get_size()[0]/1.5,self.player_image.get_size()[1]/1.5))
-        
-        def draw():
-
-            pygame.draw.ellipse(player.surface,(0,0,0,130),(0,0,35,21))
+            self.current_anmimation = list(My_roc_gym.Player.Animaitons.animaiton_dict)[4]
+            self.animation_list = list(My_roc_gym.Player.Animaitons.animaiton_dict)
+            self.animation_wh = My_roc_gym.Player.Animaitons.scaled_animation_sheet.get_width()/16
+            self.animation_frame_num = 0
+            self.animation_col = 1
+            self.animation_frame_x = self.animation_wh * self.animation_frame_num
+            self.animation_frame_y = self.animation_wh * My_roc_gym.Player.Animaitons.animaiton_dict[self.current_anmimation][0]
+            self.next_animation = None
+            self.frame = pygame.Rect(self.animation_frame_x,self.animation_frame_y,self.animation_wh,self.animation_wh)
             
-            screen.blit(player.surface,(player.x+player.player_image.get_size()[0]-102,player.y+player.player_image.get_size()[1]-18))
-            screen.blit(player.player_image,(player.x,player.y))
+        
+            self.animation = pygame.image.load(animation).convert_alpha()
+            self.animation = pygame.transform.smoothscale(self.animation,(self.animation.get_size()[0]/My_roc_gym.Player.Animaitons.animation_scale,self.animation.get_size()[1]/My_roc_gym.Player.Animaitons.animation_scale)).convert_alpha()
+
+        class Animaitons():
+
+            animation_scale = 1
+            animation_sheet = pygame.image.load("lib/assets/player_model/l_player_animation_sheet.png").convert_alpha()
+            scaled_animation_sheet = pygame.transform.smoothscale(animation_sheet,(animation_sheet.get_size()[0]/animation_scale,animation_sheet.get_size()[1]/animation_scale)).convert_alpha()
+
+            
+            timer = pygame.time.get_ticks()
+            animation_delay = None
+
+            animaiton_dict = {
+                #column, #num animations , delay
+                "idle" : [0, 2,350],
+                "dribble" : [1,7,70],
+                "run" : [2,6,120],
+                "side jumpshot" : [3,16,85],
+                "between legs" : [4,12,75],
+                "spin move" : [5,10,80],
+                "behind the back" : [6,8,100],
+                "snatch back" : [7,10,70],
+                "moving crossover" : [8,11,100],
+                "l standing crossover" : [9,11,60],
+                "r standing crossover" : [10,11,60],
+                "chest pass" : [11,15,60],
+                "layup" : [12,15,80],
+                "one hand dunk" : [13,13,120],
+            }
+
+           
+        def draw():
+            
+
+            current_time = pygame.time.get_ticks()
+            My_roc_gym.Player.Animaitons.animation_delay = My_roc_gym.Player.Animaitons.animaiton_dict[player.current_anmimation][2]
+            
+            player.animation_wh = My_roc_gym.Player.Animaitons.scaled_animation_sheet.get_width()/16
+            player.animation_frame_x = player.animation_wh * player.animation_frame_num
+            player.animation_frame_y = player.animation_wh * My_roc_gym.Player.Animaitons.animaiton_dict[player.current_anmimation][0]
+            player.frame = pygame.Rect(player.animation_frame_x,player.animation_frame_y,player.animation_wh,player.animation_wh)
+
+            player.next_animation = My_roc_gym.Player.Animaitons.scaled_animation_sheet.subsurface(player.frame).convert_alpha()
+            
+            pygame.draw.ellipse(player.surface,(0,0,0,130),(0,0,37,23))
+            screen.blit(player.surface,(player.x+player.animation.get_size()[0]-185,player.y+player.animation.get_size()[1]-97))
+            screen.blit(player.next_animation,(int(player.x),int(player.y)))
+
+
+            if current_time > My_roc_gym.Player.Animaitons.timer:
+                if player.animation_frame_num != My_roc_gym.Player.Animaitons.animaiton_dict[player.current_anmimation][1]:
+                    player.animation_frame_num +=1 
+                My_roc_gym.Player.Animaitons.timer = current_time + My_roc_gym.Player.Animaitons.animation_delay
+
+            if player.animation_frame_num >= My_roc_gym.Player.Animaitons.animaiton_dict[player.current_anmimation][1] :
+                player.animation_frame_num = 0
+            
+            #print(player.animation_frame_num)
+
+        def move():
 
             keys = pygame.key.get_pressed()
+            
+            #print(keys)
 
             if keys[pygame.K_LSHIFT]:
-                player.player_speed = min(player.player_speed + .01,player.max_speed)
+                player.player_speed = min(player.player_speed + .001,player.max_speed)
             else:
-                player.player_speed = max(player.player_speed - .01,1)
+                player.player_speed = max(player.player_speed - .001,1)
 
             if keys[pygame.K_d]:
-                player.x += player.player_speed
-
-            if keys[pygame.K_a]:
+                player.x_direction = 1
+                player.current_anmimation = player.animation_list[2]
+                player.x += player.player_speed 
+                player.x_velocity = 1
+            elif keys[pygame.K_a]:
+                player.x_direction = -1 
+                player.current_anmimation = player.animation_list[2]
                 player.x -= player.player_speed
+                player.x_velocity = 1
+            else:
+                player.x_velocity = max(player.x_velocity-0.03,0)
+                player.x += player.x_velocity * player.x_direction
+            
+            #print(player.x_velocity)
             
             if keys[pygame.K_w]:
+                player.y_direction = -1
+                player.current_anmimation = player.animation_list[2]
                 player.y -= player.player_speed
-
-            if keys[pygame.K_s]:
+                player.y_velocity = 1
+            elif keys[pygame.K_s]:
+                player.y_direction = 1
+                player.current_anmimation = player.animation_list[2]
                 player.y += player.player_speed
+                player.y_velocity = 1
+            else:
+                player.y_velocity = max(player.y_velocity-0.05,0)
+                player.y += player.y_velocity * player.y_direction
+
+            move_keys = [keys[pygame.K_w],keys[pygame.K_s],keys[pygame.K_a],keys[pygame.K_d]]
+            
+            if True in move_keys:
+                pass
+            else:
+                player.current_anmimation = player.animation_list[1]
+           
+            
+            
+
+            
+            
+            
 
             #print(player.player_speed)
+        
+        
+            
+    
 
     class Camera():
         fov = 100
@@ -398,7 +501,11 @@ Main_menu.Windows.select_windows = [settings_window,roster_window,my_roc_window,
 
 my_roc_gym_background = My_roc_gym("lib/assets/my_roc_gym/my_gym_background.png",None,My_roc_gym.scale,My_roc_gym.Camera.fov)
 
+
 player = My_roc_gym.Player(None,(My_roc_gym.x_start_pos-200,My_roc_gym.y_start_pos,20,20),"lib/assets/my_roc_gym/player_example.png",1)
+
+
+
 
 
 # Game loop
@@ -422,13 +529,17 @@ while running:
     if game_state == "My Gym":
         My_roc_gym.draw_gym()
         pygame.draw.rect(screen,(0,0,0),rect,width=2)
+        #My_roc_gym.Player.set_animation()
         My_roc_gym.Player.draw()
+        
+        My_roc_gym.Player.move()
         My_roc_gym.Camera.get_offset()
+        
     
 
     pygame.display.flip()
 
-    clock.tick(FPS)
+    clock.tick(FPS)/ 1000.0
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
