@@ -385,7 +385,7 @@ class My_roc_gym():
 
             
 
-            if keys[pygame.K_d] and player.x < My_roc_gym.Camera.x_max:
+            if keys[pygame.K_d] and player.x < My_roc_gym.Camera.x_max :
                 player.x_direction = 1
                 player.current_anmimation = player.animation_list[2]
                 player.x += player.player_speed 
@@ -438,7 +438,7 @@ class My_roc_gym():
         y_offset = 0  
         distance = 0
         size = 20
-        x_max = 550
+        x_max = 600
         x_min = -40
         direction  = 0
 
@@ -464,7 +464,7 @@ class My_roc_gym():
             keys = pygame.key.get_pressed()
 
         
-            if keys[pygame.K_d] and player.x > My_roc_gym.Camera.x_max:
+            if keys[pygame.K_d] and player.x > My_roc_gym.Camera.x_max and My_roc_gym.Camera.x_offset < 150:
                 My_roc_gym.Camera.direction =-1
                 My_roc_gym.Camera.x_offset +=1 
                 for _ in stage_rects:
