@@ -243,10 +243,11 @@ class My_roc_gym():
 
     scale = 1.2
     
-    delay_time = 10
+    delay_time = 5
     timer = pygame.time.get_ticks()
     x_start_pos = 300
     y_start_pos = 150
+    x_offset = 0
 
     court_sections = []
 
@@ -277,20 +278,12 @@ class My_roc_gym():
         self.background_rect = self.background_image.get_rect(topleft=(-My_roc_gym.x_start_pos,-My_roc_gym.y_start_pos))
 
     def draw_gym():
-        current_time = pygame.time.get_ticks()
-        
         screen.blit(my_roc_gym_background.background_image,my_roc_gym_background.background_rect)
-        
         screen.blit(My_roc_gym.goal,My_roc_gym.goal_rect)
-        
         screen.blit(My_roc_gym.front_goal,My_roc_gym.front_goal_rect)    
         screen.blit(My_roc_gym.basket_rack,My_roc_gym.basket_rack_rect)
         
-        if current_time > My_roc_gym.timer:
-            #my_roc_gym_background.background_rect.x -=1
-            My_roc_gym.timer = current_time + My_roc_gym.delay_time
-
-        #pygame.draw.rect(screen,(255,0,0),(200,250,20,20))
+    
     
     class Player():
         
@@ -351,11 +344,9 @@ class My_roc_gym():
                 "layup" : [12,15,80],
                 "one hand dunk" : [13,13,120],
             }
-
            
         def draw():
             
-
             current_time = pygame.time.get_ticks()
             My_roc_gym.Player.Animaitons.animation_delay = My_roc_gym.Player.Animaitons.animaiton_dict[player.current_anmimation][2]
             
@@ -392,19 +383,23 @@ class My_roc_gym():
             else:
                 player.player_speed = max(player.player_speed - .002,1)
 
-            if keys[pygame.K_d]:
+            
+
+            if keys[pygame.K_d] and player.x < My_roc_gym.Camera.x_max:
                 player.x_direction = 1
                 player.current_anmimation = player.animation_list[2]
                 player.x += player.player_speed 
                 player.x_velocity = 1
-            elif keys[pygame.K_a]:
+            elif keys[pygame.K_a] and player.x > My_roc_gym.Camera.x_min -50:
                 player.x_direction = -1 
                 player.current_anmimation = player.animation_list[2]
-                player.x -= player.player_speed
+                if My_roc_gym.Camera.x_offset <= 0:
+                    player.x -= player.player_speed
                 player.x_velocity = 1
             else:
-                player.x_velocity = max(player.x_velocity-0.03,0)
-                player.x += player.x_velocity * player.x_direction
+                if player.x < My_roc_gym.Camera.x_max:
+                    player.x_velocity = max(player.x_velocity-0.03,0)
+                    player.x += player.x_velocity * player.x_direction
             
             #print(player.x_velocity)
             
@@ -432,32 +427,64 @@ class My_roc_gym():
             #print(player.player_speed)
         
     class Camera():
-        x_center = WIDTH/2 
-        y_center = HEIGHT/2
+
+        camera_rect = pygame.Rect(WIDTH/2,HEIGHT/2,20,20)
+
+        x_position = WIDTH/2 
+        y_position = HEIGHT/2
         fov = 100
+        offset_amount = 0.3
         x_offset = 0 
         y_offset = 0  
         distance = 0
         size = 20
-        
-        rect = pygame.Rect(x_offset)
+        x_max = 550
+        x_min = -40
+        direction  = 0
 
-        time_delay = 400
+
+        #rect = pygame.Rect(x_offset)
+
+        time_delay = 10
         timer = pygame.time.get_ticks()
 
-        def draw_rect():
-            pass
+        def draw_camera():
+            camera = pygame.Rect(My_roc_gym.Camera.x_position,My_roc_gym.Camera.y_position,My_roc_gym.Camera.size,My_roc_gym.Camera.size)
+            pygame.draw.rect(screen,(0,0,0),camera)
+            
+            if player.y < HEIGHT/2 -50:
+                My_roc_gym.Camera.y_offset = 1
+            elif player.y > HEIGHT/2:
+                My_roc_gym.Camera.y_offset = -1
+            else:
+                My_roc_gym.Camera.y_offset = 0 
 
 
+        def offset_stage():
+            keys = pygame.key.get_pressed()
+
+        
+            if keys[pygame.K_d] and player.x > My_roc_gym.Camera.x_max:
+                My_roc_gym.Camera.direction =-1
+                My_roc_gym.Camera.x_offset +=1 
+                for _ in stage_rects:
+                    _.x += My_roc_gym.Camera.direction
+            elif keys[pygame.K_a]:
+                My_roc_gym.Camera.direction = 1
+                if My_roc_gym.Camera.x_offset > 0:
+                    My_roc_gym.Camera.x_offset -=1
+                    for _ in stage_rects:
+                        _.x += My_roc_gym.Camera.direction
+
+            print(My_roc_gym.Camera.x_offset)
+
+        
         def get_offset():
 
             current_time = pygame.time.get_ticks()
 
             if current_time > My_roc_gym.Camera.timer :
                 My_roc_gym.Camera.timer = current_time + My_roc_gym.Camera.time_delay
-
-        
-
 
                     
 '''
@@ -477,9 +504,9 @@ Enviornment_sounds.park_ambience.play(loops=-1)
 song = Music.souls_of_mischief
 #print(song.__getattribute__)
 song.set_volume(0.1)
-#song.play()
+#song.play() 
 
-camera_rect = pygame.Rect(WIDTH/2,HEIGHT,20,20)
+
 
 loadup_screen = Loadup_screen("lib/assets/menu_backgrounds/loadup_background.png")
 my_roc_text = font.render("My Roc",True,(255,255,255))
@@ -493,7 +520,7 @@ the_roc_window = Main_menu.Windows(600,80,180,330,"The Roc","lib/assets/menu_bac
 Main_menu.Windows.select_windows = [settings_window,roster_window,my_roc_window,my_season_window,the_roc_window,]
 
 my_roc_gym_background = My_roc_gym("lib/assets/my_roc_gym/my_gym_background.png",None,My_roc_gym.scale,My_roc_gym.Camera.fov)
-
+stage_rects = [my_roc_gym_background.background_rect,My_roc_gym.goal_rect,My_roc_gym.front_goal_rect,My_roc_gym.basket_rack_rect]
 player = My_roc_gym.Player(None,(My_roc_gym.x_start_pos-200,My_roc_gym.y_start_pos,20,20),"lib/assets/my_roc_gym/player_example.png",1)
 
 # Game loop
@@ -508,15 +535,16 @@ while running:
     #pygame.draw.rect(screen,(0,0,0),rect,2)
     #screen.blit(basket,(-660,-200))
 
-    if game_state == "loadup_screen":
+    if game_state == "Loadup screen":
         Loadup_screen.draw_screen()
 
-    if game_state == "main_menu":
+    if game_state == "Main menu":
         Main_menu.Windows.draw_menu()
        
     if game_state == "My Gym":
         My_roc_gym.draw_gym()
-        
+        My_roc_gym.Camera.draw_camera()
+        My_roc_gym.Camera.offset_stage()
         #My_roc_gym.Player.set_animation()
         My_roc_gym.Player.draw()
         My_roc_gym.Player.move()
