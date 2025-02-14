@@ -21,7 +21,7 @@ gray_cement = (129,129,129)
 blue = (20,30,120)
 clock = pygame.time.Clock()
 font =  pygame.font.Font("lib/assets/fonts/pixellari/Pixellari.ttf",20)
-game_state = "Loadup screen"
+game_state = "My Gym"
 FPS = 120
 
 class Music():
@@ -154,6 +154,7 @@ class Main_menu():
         ui_slide = pygame.mixer.Sound("lib/assets/ui_sounds/ui_slide.mp3")
         ui_select = pygame.mixer.Sound("lib/assets/ui_sounds/button-124476 (mp3cut.net).mp3")
         startup_sound = pygame.mixer.Sound("lib/assets/ui_sounds/soft-startup-sound-269291.mp3")
+        menu_slide = pygame.mixer.Sound("lib/assets/ui_sounds/menu_slide.mp3")
 
     def menu_select():
         Main_menu.Ui_sounds.ui_select.play()
@@ -320,10 +321,13 @@ class My_roc_gym():
 
 
     def check_paused():
+        Main_menu.Ui_sounds.menu_slide.set_volume(0.3)
         if My_roc_gym.options_pressed == False:
             My_roc_gym.options_pressed = True
+            Main_menu.Ui_sounds.menu_slide.play()
         else:
             My_roc_gym.options_pressed = False
+            Main_menu.Ui_sounds.menu_slide.play()
     
         
         #print(My_roc_gym.options_backgorund_sidemenu.x)
@@ -606,7 +610,7 @@ Enviornment_sounds.park_ambience.play(loops=-1)
 song = Music.souls_of_mischief
 #print(song.__getattribute__)
 song.set_volume(0.1)
-#song.play() 
+song.play() 
 
 loadup_screen = Loadup_screen("lib/assets/menu_backgrounds/loadup_background.png")
 my_roc_text = font.render("My Roc",True,(255,255,255))
