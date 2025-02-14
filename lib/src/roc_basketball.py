@@ -4,10 +4,13 @@ import os
 import math
 import random
 import pygame.macosx
+
   
 # Initialize Pygame
 pygame.init()
+pygame.joystick.init()
 pygame.mixer.init()
+
 # Set up the display
 WIDTH, HEIGHT = 800, 500
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -18,7 +21,7 @@ gray_cement = (129,129,129)
 blue = (20,30,120)
 clock = pygame.time.Clock()
 font =  pygame.font.Font("lib/assets/fonts/pixellari/Pixellari.ttf",20)
-game_state = "My Gym"
+game_state = "Loadup screen"
 FPS = 120
 
 class Music():
@@ -126,7 +129,7 @@ class Loadup_screen():
                 if loadup_screen.background_rect.x  == 0:
                     Loadup_screen.direction = -1 
                     
-        if keys[pygame.K_SPACE]:
+        if keys[pygame.K_SPACE] or controller1.get_button(0):
             Loadup_screen.key_space_pressed = True
          
             
@@ -135,7 +138,7 @@ class Loadup_screen():
             Loadup_screen.transparency +=1
            
             if Loadup_screen.transparency == 255:
-                game_state = "main_menu"
+                game_state = "Main menu"
 
         pygame.draw.rect(Loadup_screen.transition_surface,(0,0,0,Loadup_screen.transparency),(0,0,WIDTH,HEIGHT))
         screen.blit(Loadup_screen.transition_surface,(0,0))
@@ -152,10 +155,15 @@ class Main_menu():
         ui_select = pygame.mixer.Sound("lib/assets/ui_sounds/button-124476 (mp3cut.net).mp3")
         startup_sound = pygame.mixer.Sound("lib/assets/ui_sounds/soft-startup-sound-269291.mp3")
 
+    def menu_select():
+        Main_menu.Ui_sounds.ui_select.play()
+        Main_menu.Ui_sounds.ui_select.set_volume(0.3)
+        Transition_screen.clicked = True
+
     class Windows():
         select_windows = []
         delay_time = 100
-        timer = pygame.time.get_ticks()
+        timer = 0
         current_window_num = 0
         
         background_surf = pygame.Surface((WIDTH,HEIGHT),pygame.SRCALPHA)
@@ -181,27 +189,32 @@ class Main_menu():
         def draw_menu():
             current_time = pygame.time.get_ticks()
             keys = pygame.key.get_pressed()
-            
-            if current_time > Main_menu.Windows.timer:
-                Main_menu.Windows.timer = current_time + Main_menu.Windows.delay_time 
+            My_roc_gym.Controller.get_button()
 
-                if keys[pygame.K_d]:
+            if (keys[pygame.K_d] or My_roc_gym.Controller.get_button() == "right"):
+                if current_time > Main_menu.Windows.timer: 
                     Main_menu.Ui_sounds.ui_slide.play()
                     
+
                     if Main_menu.Windows.current_window_num > len(Main_menu.Windows.select_windows)-2:
                         Main_menu.Windows.current_window_num = 0
-                    else:
+                    else: 
                         Main_menu.Windows.current_window_num +=1
-                
-                elif keys[pygame.K_a]:
-                    Main_menu.Ui_sounds.ui_slide.play()
                     
+                    Main_menu.Windows.timer = current_time + Main_menu.Windows.delay_time
+
+            elif (keys[pygame.K_a] or My_roc_gym.Controller.get_button() == "left"):
+                if current_time > Main_menu.Windows.timer:
+                    Main_menu.Ui_sounds.ui_slide.play()
+                    Main_menu.Windows.timer = current_time + Main_menu.Windows.delay_time
+                    
+
                     if Main_menu.Windows.current_window_num < 1:
                         Main_menu.Windows.current_window_num = 4
                     else:
                         Main_menu.Windows.current_window_num -=1
-                    
 
+                    
             #pygame.draw.rect(Main_menu.Windows.background_surf,(0,0,0,0),(0,0,WIDTH,HEIGHT))
 
             for num,window in enumerate(Main_menu.Windows.select_windows):
@@ -227,6 +240,8 @@ class Main_menu():
         
             if Transition_screen.clicked == True:
                 Transition_screen.draw_screen()
+        
+
 
         '''
         def menu_select():
@@ -265,7 +280,15 @@ class My_roc_gym():
     basket_rack_image = pygame.image.load("lib/assets/my_roc_gym/basket_rack.png").convert_alpha()
     basket_rack = pygame.transform.smoothscale(basket_rack_image,(basket_rack_image.get_size()[0]/2,basket_rack_image.get_size()[1]/2))
     basket_rack_rect = basket_rack.get_rect(topleft=(-x_start_pos+90,-y_start_pos+20))
+
+    options_pressed = False
+    options_background_surface = pygame.Surface((WIDTH,HEIGHT),pygame.SRCALPHA)
+    options_background_screen = pygame.Rect(0,0,WIDTH,HEIGHT)
+    options_backgorund_sidemenu = pygame.Rect(-170,0,170,HEIGHT)
+    options_background_transparency = 0
+    default_transparency = 170
    
+
     def __init__(self,background_image,court_image,scale,fov):
         super(My_roc_gym,self).__init__()
         self.scale = scale
@@ -282,9 +305,29 @@ class My_roc_gym():
         screen.blit(My_roc_gym.goal,My_roc_gym.goal_rect)
         screen.blit(My_roc_gym.front_goal,My_roc_gym.front_goal_rect)    
         screen.blit(My_roc_gym.basket_rack,My_roc_gym.basket_rack_rect)
+    
+    def draw_pause_menu():
+        pygame.draw.rect(My_roc_gym.options_background_surface,(0,0,0,My_roc_gym.options_background_transparency),My_roc_gym.options_background_screen)
+        pygame.draw.rect(My_roc_gym.options_background_surface,(0,0,0,My_roc_gym.options_background_transparency+30),My_roc_gym.options_backgorund_sidemenu)
+        screen.blit(My_roc_gym.options_background_surface,(0,0))
+
+        if My_roc_gym.options_pressed:
+            My_roc_gym.options_background_transparency = min(My_roc_gym.options_background_transparency+5,My_roc_gym.default_transparency)
+            My_roc_gym.options_backgorund_sidemenu.x = min(My_roc_gym.options_backgorund_sidemenu.x+5,0)
+        else:
+            My_roc_gym.options_background_transparency = max(My_roc_gym.options_background_transparency-5,0)
+            My_roc_gym.options_backgorund_sidemenu.x = max(My_roc_gym.options_backgorund_sidemenu.x-5,-My_roc_gym.options_backgorund_sidemenu.width)
+
+
+    def check_paused():
+        if My_roc_gym.options_pressed == False:
+            My_roc_gym.options_pressed = True
+        else:
+            My_roc_gym.options_pressed = False
+    
         
-    
-    
+        #print(My_roc_gym.options_backgorund_sidemenu.x)
+        
     class Player():
         
         def __init__(self,build,rect,animation,player_speed):
@@ -294,6 +337,8 @@ class My_roc_gym():
             self.rect = rect
             self.x = self.rect[0]
             self.y = self.rect[1]
+            self.y_min = 70
+            self.y_max = 300
             self.animation_number = None
             self.scale = My_roc_gym.scale
             self.x_direction = -1
@@ -311,6 +356,7 @@ class My_roc_gym():
             self.animation_frame_x = self.animation_wh * self.animation_frame_num
             self.animation_frame_y = self.animation_wh * My_roc_gym.Player.Animaitons.animaiton_dict[self.current_anmimation][0]
             self.next_animation = None
+            self.animation_playing = False
             self.frame = pygame.Rect(self.animation_frame_x,self.animation_frame_y,self.animation_wh,self.animation_wh)
             
         
@@ -325,7 +371,7 @@ class My_roc_gym():
 
             
             timer = pygame.time.get_ticks()
-            animation_delay = None
+            animation_delay = 0
 
             animaiton_dict = {
                 #column, #num animations , delay
@@ -347,7 +393,6 @@ class My_roc_gym():
            
         def draw():
             
-            current_time = pygame.time.get_ticks()
             My_roc_gym.Player.Animaitons.animation_delay = My_roc_gym.Player.Animaitons.animaiton_dict[player.current_anmimation][2]
             
             player.animation_wh = My_roc_gym.Player.Animaitons.scaled_animation_sheet.get_width()/16
@@ -361,36 +406,24 @@ class My_roc_gym():
             screen.blit(player.surface,(player.x+player.animation.get_size()[0]-185,player.y+player.animation.get_size()[1]-97))
             screen.blit(player.next_animation,(int(player.x),int(player.y)))
 
-
-            if current_time > My_roc_gym.Player.Animaitons.timer:
-                if player.animation_frame_num != My_roc_gym.Player.Animaitons.animaiton_dict[player.current_anmimation][1]:
-                    player.animation_frame_num +=1 
-                My_roc_gym.Player.Animaitons.timer = current_time + My_roc_gym.Player.Animaitons.animation_delay
-
-            if player.animation_frame_num >= My_roc_gym.Player.Animaitons.animaiton_dict[player.current_anmimation][1] :
-                player.animation_frame_num = 0
-            
             #print(player.animation_frame_num)
 
         def move():
 
             keys = pygame.key.get_pressed()
             
-            #print(keys)
-
-            if keys[pygame.K_LSHIFT]:
+    
+            if (keys[pygame.K_LSHIFT] or round(My_roc_gym.Controller.get_trigger()) == 1):
                 player.player_speed = min(player.player_speed + .002,player.max_speed)
             else:
                 player.player_speed = max(player.player_speed - .002,1)
 
-            
-
-            if keys[pygame.K_d] and player.x < My_roc_gym.Camera.x_max :
+            if (keys[pygame.K_d] or (round(My_roc_gym.Controller.get_x_left_stick()) == 1)) and player.x < My_roc_gym.Camera.x_max :
                 player.x_direction = 1
                 player.current_anmimation = player.animation_list[2]
                 player.x += player.player_speed 
                 player.x_velocity = 1
-            elif keys[pygame.K_a] and player.x > My_roc_gym.Camera.x_min -50:
+            elif (keys[pygame.K_a] or (round(My_roc_gym.Controller.get_x_left_stick()) == -1)) and player.x > My_roc_gym.Camera.x_min :
                 player.x_direction = -1 
                 player.current_anmimation = player.animation_list[2]
                 if My_roc_gym.Camera.x_offset <= 0:
@@ -403,29 +436,83 @@ class My_roc_gym():
             
             #print(player.x_velocity)
             
-            if keys[pygame.K_w]:
-                player.y_direction = -1
-                player.current_anmimation = player.animation_list[2]
-                player.y -= player.player_speed
-                player.y_velocity = 1
-            elif keys[pygame.K_s]:
-                player.y_direction = 1
-                player.current_anmimation = player.animation_list[2]
-                player.y += player.player_speed
-                player.y_velocity = 1
+            if (keys[pygame.K_w] or round(My_roc_gym.Controller.get_y_left_stick()) == -1) :
+                if player.y > player.y_min:
+                    player.y_direction = -1
+                    player.current_anmimation = player.animation_list[2]
+                    player.y -= player.player_speed
+                    player.y_velocity = 1
+            elif (keys[pygame.K_s] or round(My_roc_gym.Controller.get_y_left_stick()) == 1):
+                if player.y < player.y_max:
+                    player.y_direction = 1
+                    player.current_anmimation = player.animation_list[2]
+                    player.y += player.player_speed
+                    player.y_velocity = 1
             else:
                 player.y_velocity = max(player.y_velocity-0.05,0)
                 player.y += player.y_velocity * player.y_direction
 
-            move_keys = [keys[pygame.K_w],keys[pygame.K_s],keys[pygame.K_a],keys[pygame.K_d]]
+            #Print(player.current_anmimation ,player.next_animation)
+    
+            keys = pygame.key.get_pressed()
+
+            move_keys = [(keys[pygame.K_w] or round(My_roc_gym.Controller.get_y_left_stick()) == -1),
+                         (keys[pygame.K_s] or round(My_roc_gym.Controller.get_y_left_stick()) == 1),
+                         (keys[pygame.K_a] or round(My_roc_gym.Controller.get_x_left_stick()) == -1),
+                         (keys[pygame.K_d] or round(My_roc_gym.Controller.get_x_left_stick()) == 1),
+                         (keys[pygame.K_e] or My_roc_gym.Controller.get_button() == "e"),player.animation_playing]
             
             if True in move_keys:
                 pass
             else:
                 player.current_anmimation = player.animation_list[1]
+            
+            if (keys[pygame.K_e] or My_roc_gym.Controller.get_button() == "e")  and player.current_anmimation != player.animation_list[3]:
+                player.animation_playing = True
+                player.current_anmimation = player.animation_list[3]
+            
 
+ 
             #print(player.player_speed)
         
+        def set_animation():
+            player.animation_frame_num = 0
+         
+
+        def animate():
+            current_time = pygame.time.get_ticks()
+        
+            if current_time > My_roc_gym.Player.Animaitons.timer:
+                player.animation_frame_num +=1 
+                My_roc_gym.Player.Animaitons.timer = current_time + My_roc_gym.Player.Animaitons.animation_delay
+
+            if player.animation_frame_num >= My_roc_gym.Player.Animaitons.animaiton_dict[player.current_anmimation][1] :
+                player.animation_playing = False
+                player.animation_frame_num = 0
+
+    class Controller():
+        def get_x_left_stick():
+            return controller1.get_axis(0)
+
+        def get_y_left_stick():
+            return controller1.get_axis(1)
+        
+        def get_button():
+            for i in range(controller1.get_numbuttons()):
+                button = controller1.get_button(i)
+                if i == 14 and button == True:
+                    return "right"
+                if i == 13 and button == True:
+                    return "left"
+                if i == 2 and button  == True:
+                    return "e"
+
+        def get_trigger():
+            return controller1.get_axis(5)
+
+
+
+
     class Camera():
 
         camera_rect = pygame.Rect(WIDTH/2,HEIGHT/2,20,20)
@@ -436,48 +523,64 @@ class My_roc_gym():
         offset_amount = 0.3
         x_offset = 0 
         y_offset = 0  
-        distance = 0
+        y_distance = 0
         size = 20
         x_max = 600
         x_min = -40
-        direction  = 0
-
+        y_max = -180
+        y_min = -100
+        cam_y_max = -65
+        cam_y_min = -170
+        x_direction = 0
+        y_direction = 0
+        camera_moving = bool
 
         #rect = pygame.Rect(x_offset)
 
         time_delay = 10
         timer = pygame.time.get_ticks()
 
-        def draw_camera():
-            camera = pygame.Rect(My_roc_gym.Camera.x_position,My_roc_gym.Camera.y_position,My_roc_gym.Camera.size,My_roc_gym.Camera.size)
-            pygame.draw.rect(screen,(0,0,0),camera)
-            
-            if player.y < HEIGHT/2 -50:
-                My_roc_gym.Camera.y_offset = 1
-            elif player.y > HEIGHT/2:
-                My_roc_gym.Camera.y_offset = -1
-            else:
-                My_roc_gym.Camera.y_offset = 0 
-
-
         def offset_stage():
+            #print(my_roc_gym_background.background_rect.y)
+            pygame.draw.rect(screen,(0,0,0),My_roc_gym.Camera.camera_rect,1)
             keys = pygame.key.get_pressed()
+            My_roc_gym.Camera.y_distance = player.y - HEIGHT/2
 
-        
-            if keys[pygame.K_d] and player.x > My_roc_gym.Camera.x_max and My_roc_gym.Camera.x_offset < 150:
-                My_roc_gym.Camera.direction =-1
+            if (keys[pygame.K_d] or (round(My_roc_gym.Controller.get_x_left_stick()) == 1)) and player.x > My_roc_gym.Camera.x_max and My_roc_gym.Camera.x_offset < 150:
+                My_roc_gym.Camera.x_direction =-1
                 My_roc_gym.Camera.x_offset +=1 
-                for _ in stage_rects:
-                    _.x += My_roc_gym.Camera.direction
-            elif keys[pygame.K_a]:
-                My_roc_gym.Camera.direction = 1
+                for _ in stage_rects[:4]:
+                    _.x += My_roc_gym.Camera.x_direction
+
+            elif (keys[pygame.K_a] or round(My_roc_gym.Controller.get_x_left_stick()) == -1):
+                My_roc_gym.Camera.x_direction = 1
                 if My_roc_gym.Camera.x_offset > 0:
                     My_roc_gym.Camera.x_offset -=1
-                    for _ in stage_rects:
-                        _.x += My_roc_gym.Camera.direction
+                    for _ in stage_rects[:4]:
+                        _.x += My_roc_gym.Camera.x_direction
+                    
+            if (keys[pygame.K_w] or round(My_roc_gym.Controller.get_y_left_stick()) == -1):
+                if My_roc_gym.Camera.y_distance < My_roc_gym.Camera.y_max:
+                    My_roc_gym.Camera.y_direction = 1
+                    My_roc_gym.Camera.camera_moving = True
+                    
+                    if my_roc_gym_background.background_rect.y < My_roc_gym.Camera.cam_y_max:
 
-            print(My_roc_gym.Camera.x_offset)
+                        for _ in stage_rects[:4]:
+                            _.y += My_roc_gym.Camera.y_direction
+                        
+            elif (keys[pygame.K_s] or round(My_roc_gym.Controller.get_y_left_stick()) == 1):
+                if My_roc_gym.Camera.y_distance > My_roc_gym.Camera.y_min:
+                    My_roc_gym.Camera.y_direction = -1
+                    My_roc_gym.Camera.camera_moving = True
+                    
+                    if my_roc_gym_background.background_rect.y > My_roc_gym.Camera.cam_y_min:
 
+                        for _ in stage_rects[:4]:
+                            _.y += My_roc_gym.Camera.y_direction
+
+            elif My_roc_gym.Camera.y_distance < My_roc_gym.Camera.y_max == False and  My_roc_gym.Camera.y_distance > My_roc_gym.Camera.y_min == False:
+                My_roc_gym.Camera.camera_moving = False
         
         def get_offset():
 
@@ -485,8 +588,7 @@ class My_roc_gym():
 
             if current_time > My_roc_gym.Camera.timer :
                 My_roc_gym.Camera.timer = current_time + My_roc_gym.Camera.time_delay
-
-                    
+             
 '''
 region = pygame.Rect(0,0,320,110)
 square1 = my_roc_gym.scaled_surf.subsurface(region)
@@ -506,8 +608,6 @@ song = Music.souls_of_mischief
 song.set_volume(0.1)
 #song.play() 
 
-
-
 loadup_screen = Loadup_screen("lib/assets/menu_backgrounds/loadup_background.png")
 my_roc_text = font.render("My Roc",True,(255,255,255))
 my_roc_rect = my_roc_text.get_rect(center=(0,0))
@@ -520,10 +620,13 @@ the_roc_window = Main_menu.Windows(600,80,180,330,"The Roc","lib/assets/menu_bac
 Main_menu.Windows.select_windows = [settings_window,roster_window,my_roc_window,my_season_window,the_roc_window,]
 
 my_roc_gym_background = My_roc_gym("lib/assets/my_roc_gym/my_gym_background.png",None,My_roc_gym.scale,My_roc_gym.Camera.fov)
-stage_rects = [my_roc_gym_background.background_rect,My_roc_gym.goal_rect,My_roc_gym.front_goal_rect,My_roc_gym.basket_rack_rect]
 player = My_roc_gym.Player(None,(My_roc_gym.x_start_pos-200,My_roc_gym.y_start_pos,20,20),"lib/assets/my_roc_gym/player_example.png",1)
-
+stage_rects = [my_roc_gym_background.background_rect,My_roc_gym.goal_rect,My_roc_gym.front_goal_rect,My_roc_gym.basket_rack_rect,player.x]
 # Game loop
+
+
+controller1 = pygame.joystick.Joystick(0)
+
 running = True
 while running:
 
@@ -537,34 +640,63 @@ while running:
 
     if game_state == "Loadup screen":
         Loadup_screen.draw_screen()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            if event.type == pygame.KEYDOWN:
+                pass
 
     if game_state == "Main menu":
         Main_menu.Windows.draw_menu()
-       
+        for event in pygame.event.get():
+
+            if event.type == pygame.QUIT:
+                running = False
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    Main_menu.menu_select()
+
+            elif event.type == pygame.JOYBUTTONDOWN:
+                if event.button == 0:
+                    Main_menu.menu_select()
+        
+
     if game_state == "My Gym":
         My_roc_gym.draw_gym()
-        My_roc_gym.Camera.draw_camera()
         My_roc_gym.Camera.offset_stage()
-        #My_roc_gym.Player.set_animation()
+        My_roc_gym.Player.animate()
         My_roc_gym.Player.draw()
         My_roc_gym.Player.move()
-        My_roc_gym.Camera.get_offset()
-        
+        My_roc_gym.draw_pause_menu()
+        print(player.player_speed)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_e:
+                    print("shooting")
+                    My_roc_gym.Player.set_animation()
+
+                if event.key == pygame.K_ESCAPE:
+                    My_roc_gym.check_paused()
+            
+            if event.type == pygame.JOYBUTTONDOWN:
+                if event.button == 6:
+                    My_roc_gym.check_paused()
+            
+                if event.button == 2:
+                    My_roc_gym.Player.set_animation()
+            
+    
+
     
     pygame.display.flip()
 
     clock.tick(FPS)/ 1000.0
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-
-        if game_state == "main_menu":
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN:
-                    Main_menu.Ui_sounds.ui_select.set_volume(0.3)
-                    Main_menu.Ui_sounds.ui_select.play()
-                    Transition_screen.clicked = True
+    
 
     
 
