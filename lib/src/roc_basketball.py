@@ -23,7 +23,7 @@ gray_cement = (129,129,129)
 blue = (20,30,120)
 clock = pygame.time.Clock()
 font =  pygame.font.Font("lib/assets/fonts/pixellari/Pixellari.ttf",20)
-game_state = "My Gym"
+game_state = "Loadup screen"
 FPS = 120
 
 class Music():
@@ -249,8 +249,6 @@ class Main_menu():
         
             if Transition_screen.clicked == True:
                 Transition_screen.draw_screen()
-        
-
 
         '''
         def menu_select():
@@ -316,8 +314,6 @@ class Pause_menu():
             Transition_screen.clicked = False
             Transition_screen.transpacrency = 0
             game_state = "Main menu"
-    
-
     
     def next_selected(val):
         global game_state
@@ -811,10 +807,10 @@ Enviornment_sounds.park_ambience.set_volume(0.5)
 Enviornment_sounds.park_ambience.play(loops=-1)
 
 #song = random.choice(Music.songs)
-song = Music.wanna_be_a_baller
+song = Music.souls_of_mischief
 #print(song.__getattribute__)
 song.set_volume(0.1)
-#song.play() 
+song.play() 
 
 loadup_screen = Loadup_screen("lib/assets/menu_backgrounds/loadup_background.png")
 my_roc_text = font.render("My Roc",True,(255,255,255))
