@@ -472,7 +472,7 @@ class My_roc_gym():
         class Animaitons():
 
             animation_scale = 1
-            animation_sheet = pygame.image.load("lib/assets/player_model/l_player_animation_sheet.png").convert_alpha()
+            animation_sheet = pygame.image.load("lib/assets/player_model/l_player_animation_sheet2.png").convert_alpha()
             scaled_animation_sheet = pygame.transform.smoothscale(animation_sheet,(animation_sheet.get_size()[0]/animation_scale,animation_sheet.get_size()[1]/animation_scale)).convert_alpha()
             
             shadow_x = 0
@@ -499,9 +499,12 @@ class My_roc_gym():
                 "moving crossover" : [8,11,60-animation_speed], #shift wasd and b or m 
                 "l standing crossover" : [9,11,50-animation_speed], #wasd and b button
                 "r standing crossover" : [10,11,50-animation_speed], #wasd and m button
-                "chest pass" : [11,15,60], #number buttons 1,2
-                "layup" : [12,15,80], #wasd and e in paint 
-                "one hand dunk" : [13,13,120], #shift wasd and e in paint
+                "l hezi" : [11,10,70-animation_speed],
+                "r hezi" : [12,10,70-animation_speed],
+                "stepback" : [13,13,60],
+                "chest pass" : [14,15,60], #number buttons 1,2
+                "layup" : [15,15,90], #wasd and e in paint 
+                "one hand dunk" : [16,13,120], #shift wasd and e in paint
             }
 
             def animation_playing_check():
@@ -579,7 +582,7 @@ class My_roc_gym():
                             player.y += player.y_velocity * player.y_direction
                             player.y_velocity = max(player.y_velocity-0.05,0)
             
-            print(player.animation_playing)
+            
             move_keys = [(keys[pygame.K_w] or My_roc_gym.Controller.get_y_left_stick() == -1),
                          (keys[pygame.K_s] or My_roc_gym.Controller.get_y_left_stick() == 1),
                          (keys[pygame.K_a] or My_roc_gym.Controller.get_x_left_stick() == -1),
@@ -593,18 +596,26 @@ class My_roc_gym():
             else:
                 if player.animation_playing == False:
                     player.current_anmimation = player.animation_list[1]
+        
+        def animation_check(animation_num):
+            if player.current_anmimation == player.animation_list[animation_num]:
+                return bool
+
             
         def animation_move():
+        
+            
             keys = pygame.key.get_pressed()
             move_keys = [(keys[pygame.K_w] or My_roc_gym.Controller.get_y_left_stick() == -1),
-                         (keys[pygame.K_s] or My_roc_gym.Controller.get_y_left_stick() == 1),
-                         (keys[pygame.K_a] or My_roc_gym.Controller.get_x_left_stick() == -1),
-                         (keys[pygame.K_d] or My_roc_gym.Controller.get_x_left_stick() == 1),
-                         (keys[pygame.K_e] or My_roc_gym.Controller.get_button() == "e"), player.animation_playing]
+                        (keys[pygame.K_s] or My_roc_gym.Controller.get_y_left_stick() == 1),
+                        (keys[pygame.K_a] or My_roc_gym.Controller.get_x_left_stick() == -1),
+                        (keys[pygame.K_d] or My_roc_gym.Controller.get_x_left_stick() == 1),
+                        (keys[pygame.K_e] or My_roc_gym.Controller.get_button() == "e"), player.animation_playing]
             
 
+            
             #JUMPSHOT ------
-            if player.current_anmimation == player.animation_list[3] and player.animation_frame_num > 4 and player.animation_frame_num < 8:
+            if My_roc_gym.Player.animation_check(3) and player.animation_frame_num > 4 and player.animation_frame_num < 8:
                 if My_roc_gym.Player.Animaitons.button_hold < 40:
                     My_roc_gym.Player.Animaitons.button_hold +=2
                     player.y -=1.3
@@ -619,34 +630,43 @@ class My_roc_gym():
                     player.grounded = True
 
 
-            if player.current_anmimation == player.animation_list[4] or player.current_anmimation == player.animation_list[6]:
+            if My_roc_gym.Player.animation_check(4) or player.current_anmimation == player.animation_list[6]:
                 player.x += random.uniform(-1.2,1)
 
             if My_roc_gym.Controller.get_x_left_stick() != 1:
                 
-                if player.current_anmimation == player.animation_list[5]:
-                        player.x += 1.3
+                if My_roc_gym.Player.animation_check(5):
+                        player.x += 1
                         if player.y_direction == 1:
-                            player.y += .2
+                            player.y += .8
                         elif player.y_direction == -1:
-                            player.y -= .2
+                            player.y -= .8
 
-                if player.current_anmimation == player.animation_list[7]:
+                if My_roc_gym.Player.animation_check(7):
                     player.x += 1
 
                 #time delay 
 
-            if player.current_anmimation == player.animation_list[8]:
+            if My_roc_gym.Player.animation_check(8):
                 player.x -= .5
                 player.y += .2 * player.y_direction
 
             
-            if player.current_anmimation == player.animation_list[9]:
+            if My_roc_gym.Player.animation_check(9):
                 player.y -= random.uniform(0.8,1)
-            elif player.current_anmimation == player.animation_list[10]:
+            elif My_roc_gym.Player.animation_check(10):
                 player.y -= (random.uniform(-0.8,-1))
 
-            if player.current_anmimation == player.animation_list[12]:
+            if player.animation_frame_num > 3:
+                if My_roc_gym.Player.animation_check(11):
+                    player.y += 1.5
+                if My_roc_gym.Player.animation_check(12):
+                    player.y -= 1.5
+
+            if My_roc_gym.Player.animation_check(13):
+                player.x += .5
+
+            if My_roc_gym.Player.animation_check(15):
                 if My_roc_gym.Controller.get_x_left_stick() == 0:
                     player.x -= .5
                 if pygame.Rect.colliderect(pygame.Rect(My_roc_gym.Player.Animaitons.shadow_x,My_roc_gym.Player.Animaitons.shadow_y,20,20),My_roc_gym.paint_rect5):
@@ -655,21 +675,12 @@ class My_roc_gym():
                     else:
                         player.y += .2 * My_roc_gym.Controller.get_y_left_stick() 
 
-   
+            if player.y <= player.y_min and player.current_anmimation != player.animation_list[3]:
+                player.y +=1 
+            if player.y >= player.y_max and player.current_anmimation != player.animation_list[3]:
+                player.y -=1
+        
             
-            """
-            if My_roc_gym.Player.Animaitons.stepback_hold > 0:
-                My_roc_gym.Player.Animaitons.stepback_hold +=1
-                if My_roc_gym.Player.Animaitons.stepback_hold < 25:
-                    player.x +=2.2
-
-            if My_roc_gym.Controller.get_r_trigger() == 1 and My_roc_gym.Controller.get_x_right_stick() == 1:
-                if My_roc_gym.Player.Animaitons.stepback_hold == 0:
-                    My_roc_gym.Player.Animaitons.stepback_hold +=1
-
-                if My_roc_gym.Player.Animaitons.stepback_hold > 60:
-                    My_roc_gym.Player.Animaitons.stepback_hold = 0
-            """
             
         def set_animation(animation):
             player.animation_frame_num = 0
@@ -701,7 +712,7 @@ class My_roc_gym():
 
 
             if (keys[pygame.K_e] or My_roc_gym.Controller.get_button() == "e"):
-                if player.current_anmimation != player.animation_list[3] and player.current_anmimation != player.animation_list[12]:
+                if player.current_anmimation != player.animation_list[3] and player.current_anmimation != player.animation_list[14]:
                     if player.layup_range == False:
                         My_roc_gym.Player.Animaitons.y_delay = 10
                         My_roc_gym.Player.set_animation(3)
@@ -711,19 +722,12 @@ class My_roc_gym():
                             My_roc_gym.Player.Animaitons.y_delay = 10
                             My_roc_gym.Player.set_animation(3)
                             player.hand = "right"
-                            
-                      
-                            
                         
-
             if player.current_anmimation == player.animation_list[0]:
                 My_roc_gym.Player.Animaitons.dribble_pressed = False
             elif dribble_keys == [0,0] and player.animation_frame_num == 0 or player.animation_frame_num == player.current_anmimation[1] :
                 My_roc_gym.Player.Animaitons.dribble_pressed = False
-
-
-            
-                            
+  
 
             if player.animation_playing == False and player.grounded and My_roc_gym.Player.Animaitons.dribble_pressed == False:
 
@@ -760,18 +764,29 @@ class My_roc_gym():
                     if My_roc_gym.Controller.get_y_right_stick() == -1 and player.hand == "right" :
                         My_roc_gym.Player.set_animation(9)
                         player.hand = "left"
-
+                    elif My_roc_gym.Controller.get_y_right_stick() == -1 and My_roc_gym.Controller.get_x_left_stick() != -1:
+                        My_roc_gym.Player.set_animation(12)
+                 
                     if My_roc_gym.Controller.get_y_right_stick() == 1 and player.hand == "left":
                         My_roc_gym.Player.set_animation(10)
                         player.hand = "right"
-
-            if player.layup_range == True and player.current_anmimation != player.animation_list[12] and player.current_anmimation != player.animation_list[3]:
-                if My_roc_gym.Controller.get_button() == "e" and My_roc_gym.Controller.get_x_left_stick() == -1:
-                    My_roc_gym.Player.set_animation(12)
-                    player.layup_range = False        
+                    elif My_roc_gym.Controller.get_y_right_stick() == 1 and My_roc_gym.Controller.get_x_left_stick() != -1:
+                        My_roc_gym.Player.set_animation(11)
                 
+                    if My_roc_gym.Controller.get_x_right_stick() == 1 and My_roc_gym.Controller.get_x_left_stick() != 1:
+                        My_roc_gym.Player.set_animation(13)
 
-    
+
+
+            if player.layup_range == True and player.current_anmimation != player.animation_list[15] and player.current_anmimation != player.animation_list[3]:
+                if My_roc_gym.Controller.get_button() == "e" and My_roc_gym.Controller.get_x_left_stick() == -1:
+                    My_roc_gym.Player.set_animation(15)
+                    player.layup_range = False        
+
+
+            
+
+            
             """
            
             if player.current_anmimation == player.animation_list[3]: 
@@ -854,7 +869,7 @@ class My_roc_gym():
                     for _ in stage_rects[:len(stage_rects)-1]:
                         _.x += My_roc_gym.Camera.x_direction
                     
-            if (keys[pygame.K_w] or My_roc_gym.Controller.get_y_left_stick() == -1):
+            if (keys[pygame.K_w] or My_roc_gym.Controller.get_y_left_stick() == -1) :
                 if My_roc_gym.Camera.y_distance < My_roc_gym.Camera.y_max:
                     My_roc_gym.Camera.y_direction = 1
                     My_roc_gym.Camera.camera_moving = True
@@ -862,9 +877,9 @@ class My_roc_gym():
                     if my_roc_gym_background.background_rect.y < My_roc_gym.Camera.cam_y_max:
 
                         for _ in stage_rects[:len(stage_rects)-1]:
-                            _.y += My_roc_gym.Camera.y_direction
+                            _.y += My_roc_gym.Camera.y_direction 
                         
-            elif (keys[pygame.K_s] or My_roc_gym.Controller.get_y_left_stick() == 1):
+            elif (keys[pygame.K_s] or My_roc_gym.Controller.get_y_left_stick() == 1) or My_roc_gym.Player.animation_check(11) or My_roc_gym.Player.animation_check(12):
                 if My_roc_gym.Camera.y_distance > My_roc_gym.Camera.y_min:
                     My_roc_gym.Camera.y_direction = -1
                     My_roc_gym.Camera.camera_moving = True
