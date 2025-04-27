@@ -147,8 +147,7 @@ class Main_menu:
                 animation_num = 0
           
                 
-                
-        
+            
             player1.surface = pygame.transform.smoothscale(pygame.image.load(str(pngs[player1.ball_hand]) + "/" + listdir(pngs[player1.ball_hand])[animation_num]),(200,200))
             return animation_num
         
@@ -165,9 +164,6 @@ class Main_menu:
                     if player1.dribble_ready == True:
                         player1.animation_state = Animations.walking_dribble
                 
-                
-                
-               
 
             return play_animation(animation_num,player1.animation_state)
 
@@ -200,15 +196,6 @@ class Main_menu:
             animation_num = animate(animation_num)
             
             
-        
-            
-            
-            
-
-
-
-
-
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:

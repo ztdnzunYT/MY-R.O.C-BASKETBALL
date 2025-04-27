@@ -20,9 +20,9 @@ class My_roc_gym():
 
     class Jumpshot():
 
-        shot_time = 2
+        shot_time = 10
     
-        x = 650
+        x = 300
         y = 400
 
         startpoint1_x = x
@@ -87,7 +87,6 @@ class My_roc_gym():
 
                 My_roc_gym.Jumpshot.sp4.dx = My_roc_gym.Jumpshot.sp2.x-My_roc_gym.Jumpshot.sp1.x
                 My_roc_gym.Jumpshot.sp4.dy = My_roc_gym.Jumpshot.sp2.y-My_roc_gym.Jumpshot.sp1.y
-            
                 My_roc_gym.Jumpshot.sp4.speed = (My_roc_gym.Jumpshot.sp4.distance/(My_roc_gym.Jumpshot.shot_time*120))
                 My_roc_gym.Jumpshot.sp4.vel_x = (My_roc_gym.Jumpshot.sp4.dx/My_roc_gym.Jumpshot.sp4.distance * My_roc_gym.Jumpshot.sp4.speed)
                 My_roc_gym.Jumpshot.sp4.vel_y = (My_roc_gym.Jumpshot.sp4.dy/My_roc_gym.Jumpshot.sp4.distance * My_roc_gym.Jumpshot.sp4.speed)

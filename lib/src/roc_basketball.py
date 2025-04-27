@@ -5,26 +5,25 @@ import math
 import random
 import pygame.examples
 import pygame.macosx
+import enet
 
 # Initialize Pygame
 pygame.init()
 pygame.joystick.init()
 pygame.mixer.init()
-
+    
 # Set up the display
 WIDTH, HEIGHT = 800, 500
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
-
 pygame.display.set_caption("Roc Basketball")
 
-
 white = (255, 255, 255)
-gray_cement = (129,129,129)
-blue = (20,30,120)
+gray_cement = (114,114,114)
+blue = (20,30,120)  
 clock = pygame.time.Clock()
 font =  pygame.font.Font("lib/assets/fonts/pixellari/Pixellari.ttf",20)
-game_state = "My Gym"
+game_state = "Loadup screen"
 FPS = 120
 
 class Music():
@@ -44,6 +43,7 @@ class Music():
 
 class Enviornment_sounds():
     sound_length = None
+    sound_playing = None
     channel1 = pygame.mixer.Channel(1)
     channel1.set_volume(0.1)
 
@@ -66,7 +66,7 @@ class Transition_screen():
         screen.blit(Transition_screen.transition_surface,(0,0))
 
         if Transition_screen.transpacrency == 255 and Transition_screen.clicked == True:
-            if game_state == "Main menu":
+            if game_state == "Main menu": 
                 for num,window in enumerate(Main_menu.Windows.select_windows):
                     if num == Main_menu.Windows.current_window_num:
                         game_state = window.text
@@ -266,7 +266,7 @@ class Pause_menu():
     options_pressed = False
     options_background_surface = pygame.Surface((WIDTH,HEIGHT),pygame.SRCALPHA)
     options_background_screen = pygame.Rect(0,0,WIDTH,HEIGHT)
-    options_backgorund_sidemenu = pygame.Rect(-170,0,170,HEIGHT)
+    options_background_sidemenu = pygame.Rect(-170,0,170,HEIGHT)
     options_background_transparency = 0
     default_transparency = 170
     item_selected = 0
@@ -274,7 +274,7 @@ class Pause_menu():
     def draw_pause_menu():
         global game_state
         pygame.draw.rect(Pause_menu.options_background_surface,(0,0,0,Pause_menu.options_background_transparency),Pause_menu.options_background_screen)
-        pygame.draw.rect(Pause_menu.options_background_surface,(0,0,0,Pause_menu.options_background_transparency+30),Pause_menu.options_backgorund_sidemenu)
+        pygame.draw.rect(Pause_menu.options_background_surface,(0,0,0,Pause_menu.options_background_transparency+30),Pause_menu.options_background_sidemenu)
         screen.blit(Pause_menu.options_background_surface,(0,0))
 
         if Pause_menu.options_pressed == False:
@@ -294,10 +294,10 @@ class Pause_menu():
 
         if Pause_menu.options_pressed:
             Pause_menu.options_background_transparency = min(Pause_menu.options_background_transparency+5,Pause_menu.default_transparency)
-            Pause_menu.options_backgorund_sidemenu.x = min(Pause_menu.options_backgorund_sidemenu.x+5,0)
+            Pause_menu.options_background_sidemenu.x = min(Pause_menu.options_background_sidemenu.x+5,0)
         else:
             Pause_menu.options_background_transparency = max(Pause_menu.options_background_transparency-5,0)
-            Pause_menu.options_backgorund_sidemenu.x = max(Pause_menu.options_backgorund_sidemenu.x-5,-Pause_menu.options_backgorund_sidemenu.width)
+            Pause_menu.options_background_sidemenu.x = max(Pause_menu.options_background_sidemenu.x-5,-Pause_menu.options_background_sidemenu.width)
         
         if Pause_menu.options_pressed:
             for num,item in enumerate(Pause_menu.pause_menu_items):
@@ -309,12 +309,15 @@ class Pause_menu():
 
         if Transition_screen.clicked == True:
             Transition_screen.draw_screen()
+            Pause_menu.options_pressed = False
         
         if Transition_screen.transpacrency == 254:
+            
             Transition_screen.clicked = False
             Transition_screen.transpacrency = 0
             game_state = "Main menu"
-    
+
+        
     def next_selected(val):
         global game_state
     
@@ -331,8 +334,8 @@ class Pause_menu():
             if Pause_menu.item_selected == 0:
                 Transition_screen.clicked = True
                 Main_menu.Ui_sounds.ui_select.play()
-                
-
+        
+        
     def check_paused():
         Main_menu.Ui_sounds.menu_slide.set_volume(0.3)
         if Pause_menu.options_pressed == False:
@@ -390,7 +393,7 @@ class My_roc_gym():
     paint_rect4 = pygame.Rect(560,260,25,80)
     paint_rect5 = pygame.Rect(80,230,230,140)
 
-    paint_rects = [paint_rect1,paint_rect2,paint_rect3,paint_rect4,paint_rect5]
+    paint_rects = [paint_rect1,paint_rect2,paint_rect3,paint_rect4,paint_rect5] 
 
     def __init__(self,background_image,court_image,scale,fov):
         super(My_roc_gym,self).__init__()
@@ -407,7 +410,14 @@ class My_roc_gym():
         screen.blit(my_roc_gym_background.background_image,my_roc_gym_background.background_rect)
         screen.blit(My_roc_gym.goal,My_roc_gym.goal_rect)
         screen.blit(My_roc_gym.front_goal,My_roc_gym.front_goal_rect)    
-        screen.blit(My_roc_gym.basket_rack,My_roc_gym.basket_rack_rect)
+        screen.blit(My_roc_gym.basket_rack,My_roc_gym.basket_rack_rect) 
+    
+    def bg_sounds():
+        Enviornment_sounds.park_ambience.stop()
+
+        
+        
+        
 
     def draw_detection_areas():
         
@@ -424,6 +434,20 @@ class My_roc_gym():
             player.layup_range = True
         else:
             player.layup_range = False
+
+    class Basketball():
+        def __init__(self,x,y,image):
+            self.x = x
+            self.y = y
+            self.image = image
+            self.surf =  pygame.transform.smoothscale(pygame.image.load(self.image).convert_alpha(),(57,57))
+            self.rect = self.surf.get_rect()
+        
+        def draw():
+            basketball.rect.x = sp6.x -30
+            basketball.rect.y = sp6.y -30
+            screen.blit(basketball.surf,basketball.rect)
+
 
     class Player():
         
@@ -459,10 +483,10 @@ class My_roc_gym():
             self.hand = "right"
             self.in_paint = False
             self.layup_range = False
-        
+            self.holding_ball = True
             self.animation = pygame.image.load(animation).convert_alpha()
             self.animation = pygame.transform.smoothscale(self.animation,(self.animation.get_size()[0]/My_roc_gym.Player.Animaitons.animation_scale,self.animation.get_size()[1]/My_roc_gym.Player.Animaitons.animation_scale)).convert_alpha()
-
+        
         class Animaitons():
 
             animation_scale = 1
@@ -593,7 +617,6 @@ class My_roc_gym():
         def animation_check(animation_num):
             if player.current_anmimation == player.animation_list[animation_num]:
                 return bool
-
             
         def animation_move():
         
@@ -702,17 +725,25 @@ class My_roc_gym():
             multicheck = 0
 
 
-            if (keys[pygame.K_e] or My_roc_gym.Controller.get_button() == "e"):
-                if player.current_anmimation != player.animation_list[3] and player.current_anmimation != player.animation_list[14]:
-                    if player.layup_range == False:
-                        My_roc_gym.Player.Animaitons.y_delay = 10
-                        My_roc_gym.Player.set_animation(3)
-                        player.hand = "right"
-                    else:
-                        if My_roc_gym.Controller.get_x_left_stick() != -1:
+            if player.holding_ball == True:
+                if (keys[pygame.K_e] or My_roc_gym.Controller.get_button() == "e"):
+                    if player.current_anmimation != player.animation_list[3] and player.current_anmimation != player.animation_list[14]:
+                        if player.layup_range == False:
                             My_roc_gym.Player.Animaitons.y_delay = 10
                             My_roc_gym.Player.set_animation(3)
                             player.hand = "right"
+                        else:
+                            if My_roc_gym.Controller.get_x_left_stick() != -1:
+                                My_roc_gym.Player.Animaitons.y_delay = 10
+                                My_roc_gym.Player.set_animation(3)
+                                player.hand = "right"
+
+            if player.animation_frame_num == 6 and player.current_anmimation == player.animation_list[3]:
+                player.holding_ball = False
+                My_roc_gym.Jumpshot.Sp.reset()
+                
+                    
+
                         
             if player.current_anmimation == player.animation_list[0]:
                 My_roc_gym.Player.Animaitons.dribble_pressed = False
@@ -810,6 +841,7 @@ class My_roc_gym():
                 if i == 2 and button  == True:
                     return "e"
 
+
         def get_r_trigger():
             return round(controller1.get_axis(5))
     
@@ -842,7 +874,7 @@ class My_roc_gym():
 
         def offset_stage():
            
-            pygame.draw.rect(screen,(0,0,0),(player.x,player.y,My_roc_gym.Camera.camera_rect[2],My_roc_gym.Camera.camera_rect[3]),1)
+            #pygame.draw.rect(screen,(0,0,0),(player.x,player.y,My_roc_gym.Camera.camera_rect[2],My_roc_gym.Camera.camera_rect[3]),1)
             keys = pygame.key.get_pressed()
             My_roc_gym.Camera.y_distance = player.y - HEIGHT/2
 
@@ -890,215 +922,240 @@ class My_roc_gym():
                 My_roc_gym.Camera.timer = current_time + My_roc_gym.Camera.time_delay
             
         
-        shot_time = 2
-
     class Jumpshot():
+        shot_time = 1.5
+        time_past = 0
+        shot_timer = 0
+        ball_shot = False
 
-        shot_time = 2
-    
-        x = 650
-        y = 400
+        def __init__(self,x,y):
+            self.x = x
+            self.y = y
+            self.size = 10
 
-        startpoint1_x = x
-        startpoint1_y = y + 20
-        
-        startpoint2_x = x
-        startpoint2_y = y -300
+        def draw_boxes():
+            for box in shot_boxes:
+                pygame.draw.rect(screen,(255,255,255),(box.x,box.y,box.size,box.size),1)
 
-        start_point_1 = pygame.Rect(startpoint1_x,startpoint1_y,20,20)
-        start_point_2 = pygame.Rect(startpoint2_x,startpoint2_y,20,20)
-
-        #goal endpoint
-        endpoint1_x = 100
-        endpoint1_y = 250
-
-        #goal height endpoint
-        endpoint2_x = 200
-        endpoint2_y = startpoint2_y
-
-        def set_points():
-            My_roc_gym.Jumpshot.startpoint1_x = player.x
-            My_roc_gym.Jumpshot.startpoint1_y = player.y
-
-            My_roc_gym.Jumpshot.startpoint2_x = player.x
+            pygame.draw.line(screen,(255,255,0),(box1.x+10,box1.y),(box2.x+10,box2.y))
+            pygame.draw.line(screen,(255,255,0),(box2.x+10,box2.y),(box3.x,box3.y))
+            pygame.draw.line(screen,(255,255,0),(box3.x,box3.y),(box4.x,box4.y))
 
 
+        class Sp():
 
-
-        def draw_rects():
-            pygame.draw.rect(screen,(255,0,0),(My_roc_gym.Jumpshot.start_point_1),1)
-            pygame.draw.rect(screen,(255,0,0),(My_roc_gym.Jumpshot.start_point_2),1)
-            pygame.draw.rect(screen,(0,255,0),(My_roc_gym.Jumpshot.endpoint1_x,My_roc_gym.Jumpshot.endpoint1_y,20,20),1)
-            pygame.draw.rect(screen,(255,0,0),(My_roc_gym.Jumpshot.endpoint2_x,My_roc_gym.Jumpshot.endpoint2_y,20,20),1)       
-
-        
-        def draw_lines():
-            pygame.draw.line(screen,(255,255,255),(My_roc_gym.Jumpshot.startpoint1_x+20,My_roc_gym.Jumpshot.startpoint1_y),(My_roc_gym.Jumpshot.startpoint2_x+20,My_roc_gym.Jumpshot.startpoint2_y))
-            pygame.draw.line(screen,(255,255,255),(My_roc_gym.Jumpshot.startpoint2_x,My_roc_gym.Jumpshot.startpoint2_y),(My_roc_gym.Jumpshot.endpoint2_x,My_roc_gym.Jumpshot.endpoint2_y))
-            pygame.draw.line(screen,(255,255,255),(My_roc_gym.Jumpshot.endpoint1_x,My_roc_gym.Jumpshot.endpoint1_y),(My_roc_gym.Jumpshot.endpoint2_x,My_roc_gym.Jumpshot.endpoint2_y))
-
-
-        def get_sp_distance(x1,x2,y1,y2):
-            return (math.sqrt((x2 - x1)**2 + (y2-y1)**2)) 
-
-        
-
-        class Sps():
-
-            def __init__(self,x,y,distance,dx,dy,shot_time,color):
+            def __init__(self,start_pos,x,y,color,shot_time,dx,dy):
+                self.start_x = start_pos[0]
+                self.start_y = start_pos[1]
                 self.x = x
+
                 self.y = y
-                self.dx = dx
-                self.dy = dy
-                self.distance = distance
-                self.radius = 10
                 self.color = color
                 self.shot_time = shot_time
-                self.speed = (distance / (self.shot_time*120))
-                self.vel_x = (dx/self.distance * self.speed)
-                self.vel_y = (dy/self.distance * self.speed)
+                self.radius = 10 
+                self.dx = dx
+                self.dy = dy
+                self.distance = 0
+                self.speed = 0
+                self.vel_x = 0
+                self.vel_y = 0
             
+            def get_distance(x1,x2,y1,y2):
+                return math.sqrt((x2-x1)**2 + (y2-y1)**2)
+
             def shoot():
-            
                 
-                My_roc_gym.Jumpshot.sp1.vel_x = (My_roc_gym.Jumpshot.sp1.dx/My_roc_gym.Jumpshot.sp1.distance * My_roc_gym.Jumpshot.sp1.speed)
-                My_roc_gym.Jumpshot.sp1.y += My_roc_gym.Jumpshot.sp1.vel_y
+                current_time = pygame.time.get_ticks()
 
-                My_roc_gym.Jumpshot.sp2.x += My_roc_gym.Jumpshot.sp2.vel_x
+                if current_time > My_roc_gym.Jumpshot.shot_timer:
+                    My_roc_gym.Jumpshot.time_past +=1
+                    My_roc_gym.Jumpshot.shot_timer = current_time + 1
+                
             
-                My_roc_gym.Jumpshot.sp3.x += My_roc_gym.Jumpshot.sp3.vel_x
-                My_roc_gym.Jumpshot.sp3.y += My_roc_gym.Jumpshot.sp3.vel_y
+                if player.holding_ball == False:
+                        
+                    sp1.x += sp1.vel_x
+                    sp2.x += sp2.vel_x
+                    sp3.x += sp3.vel_x
+                    
+                    sp1.y += sp1.vel_y
+                    sp2.y += sp2.vel_y
+                    sp3.y += sp3.vel_y
+                
 
-                My_roc_gym.Jumpshot.sp4.dx = My_roc_gym.Jumpshot.sp2.x-My_roc_gym.Jumpshot.sp1.x
-                My_roc_gym.Jumpshot.sp4.dy = My_roc_gym.Jumpshot.sp2.y-My_roc_gym.Jumpshot.sp1.y
-            
-                My_roc_gym.Jumpshot.sp4.speed = (My_roc_gym.Jumpshot.sp4.distance/(My_roc_gym.Jumpshot.shot_time*120))
-                My_roc_gym.Jumpshot.sp4.vel_x = (My_roc_gym.Jumpshot.sp4.dx/My_roc_gym.Jumpshot.sp4.distance * My_roc_gym.Jumpshot.sp4.speed)
-                My_roc_gym.Jumpshot.sp4.vel_y = (My_roc_gym.Jumpshot.sp4.dy/My_roc_gym.Jumpshot.sp4.distance * My_roc_gym.Jumpshot.sp4.speed)
-                My_roc_gym.Jumpshot.sp4.x += My_roc_gym.Jumpshot.sp4.vel_x *2
-                My_roc_gym.Jumpshot.sp4.y += My_roc_gym.Jumpshot.sp4.vel_y*2
-            
-                My_roc_gym.Jumpshot.sp5.dx = My_roc_gym.Jumpshot.sp3.x-My_roc_gym.Jumpshot.sp2.x
-                My_roc_gym.Jumpshot.sp5.dy = My_roc_gym.Jumpshot.sp3.y-My_roc_gym.Jumpshot.sp2.y
-                My_roc_gym.Jumpshot.sp5.distance = My_roc_gym.Jumpshot.get_sp_distance(My_roc_gym.Jumpshot.sp2.x,My_roc_gym.Jumpshot.sp3.x,My_roc_gym.Jumpshot.sp2.y,My_roc_gym.Jumpshot.sp3.y)
-                My_roc_gym.Jumpshot.sp5.speed = (My_roc_gym.Jumpshot.sp5.distance/(My_roc_gym.Jumpshot.shot_time*120))
-                My_roc_gym.Jumpshot.sp5.vel_x = (My_roc_gym.Jumpshot.sp5.dx/My_roc_gym.Jumpshot.sp5.distance * My_roc_gym.Jumpshot.sp5.speed)
-                My_roc_gym.Jumpshot.sp5.vel_y = (My_roc_gym.Jumpshot.sp5.dy/My_roc_gym.Jumpshot.sp5.distance * My_roc_gym.Jumpshot.sp5.speed)
-                My_roc_gym.Jumpshot.sp5.x += My_roc_gym.Jumpshot.sp5.vel_x *2
-                My_roc_gym.Jumpshot.sp5.y += My_roc_gym.Jumpshot.sp5.vel_y*2
+                try:
 
-                My_roc_gym.Jumpshot.sp6.dx = My_roc_gym.Jumpshot.sp5.x-My_roc_gym.Jumpshot.sp4.x
-                My_roc_gym.Jumpshot.sp6.dy = My_roc_gym.Jumpshot.sp5.y-My_roc_gym.Jumpshot.sp4.y
-                My_roc_gym.Jumpshot.sp6.distance = My_roc_gym.Jumpshot.get_sp_distance(My_roc_gym.Jumpshot.sp4.x,My_roc_gym.Jumpshot.sp5.x,My_roc_gym.Jumpshot.sp4.y,My_roc_gym.Jumpshot.sp5.y)
-                My_roc_gym.Jumpshot.sp6.speed = (My_roc_gym.Jumpshot.sp6.distance/(My_roc_gym.Jumpshot.shot_time*120))
-                My_roc_gym.Jumpshot.sp6.vel_x = (My_roc_gym.Jumpshot.sp6.dx/My_roc_gym.Jumpshot.sp6.distance * My_roc_gym.Jumpshot.sp6.speed)
-                My_roc_gym.Jumpshot.sp6.vel_y = (My_roc_gym.Jumpshot.sp6.dy/My_roc_gym.Jumpshot.sp6.distance * My_roc_gym.Jumpshot.sp6.speed)
-                My_roc_gym.Jumpshot.sp6.x += My_roc_gym.Jumpshot.sp6.vel_x * 3
-                My_roc_gym.Jumpshot.sp6.y += My_roc_gym.Jumpshot.sp6.vel_y * 3.2
-
-                for sp in My_roc_gym.Jumpshot.shot_points:
-                    pygame.draw.circle(screen,sp.color,(sp.x,sp.y),sp.radius,1)
+                    sp4.dx = (sp2.x - sp1.x)
+                    sp4.dy = (sp2.y - sp1.y)
+                    sp4.distance = My_roc_gym.Jumpshot.Sp.get_distance(sp1.x,sp2.x,sp1.y,sp2.y)
+                    sp4.speed = sp4.distance / (My_roc_gym.Jumpshot.shot_time * FPS)
+                    sp4.vel_x = (sp4.dx / sp4.distance * sp4.speed)
+                    sp4.vel_y = (sp4.dy / sp4.distance * sp4.speed)
                     
 
+                    sp5.dx = (sp3.x - sp2.x)
+                    sp5.dy = (sp3.y - sp2.y)
+                    sp5.distance = My_roc_gym.Jumpshot.Sp.get_distance(sp2.x,sp3.x,sp2.y,sp3.y)
+                    sp5.speed = sp5.distance / (My_roc_gym.Jumpshot.shot_time * FPS)
+                    sp5.vel_x = (sp5.dx / sp5.distance * sp5.speed)
+                    sp5.vel_y = (sp5.dy / sp5.distance * sp5.speed)
+                    
 
-        sp1 = Sps(startpoint1_x,startpoint1_y,get_sp_distance(startpoint1_x,startpoint1_y,startpoint2_x,startpoint2_y),(startpoint2_x-startpoint1_x),(startpoint2_y-startpoint1_y),shot_time,(255,255,255))
-        sp2 = Sps(startpoint2_x,startpoint2_y,get_sp_distance(startpoint2_x,startpoint2_y,endpoint2_x,endpoint2_y),(endpoint2_x-startpoint2_x),(endpoint2_y-startpoint2_y),shot_time,(255,255,255))
-        sp3 = Sps(endpoint2_x,endpoint2_y,get_sp_distance(endpoint1_x,endpoint1_y,endpoint2_x,endpoint2_y),(endpoint1_x-endpoint2_x),(endpoint1_y-endpoint2_y),shot_time, (255,255,255))
-        sp4 = Sps(sp1.x,sp1.y,get_sp_distance(sp2.x,sp1.x,sp2.y,sp1.y),(sp2.x-sp1.x),(sp2.y-sp1.y),shot_time,(255,255,0))
-        sp5 = Sps(sp2.x,sp2.y,get_sp_distance(sp3.x,sp2.x,sp3.y,sp2.y),(sp3.x-sp2.x),(sp3.y-sp2.y),shot_time,(255,255,0))
-        sp6 = Sps(sp4.x,sp4.y,get_sp_distance(sp5.x,sp4.x,sp5.y,sp4.y),(sp5.x-sp4.x),(sp5.y-sp5.y),shot_time,(255,0,0))
+                    sp6.dx = (sp5.x - sp4.x)
+                    sp6.dy = (sp5.y - sp4.y)
+                    sp6.distance = My_roc_gym.Jumpshot.Sp.get_distance(sp4.x,sp5.x,sp4.y,sp5.y)
+                    sp6.speed = sp6.distance / (My_roc_gym.Jumpshot.shot_time * FPS)
+                    sp6.vel_x = (sp6.dx / sp6.distance * sp6.speed)
+                    sp6.vel_y = (sp6.dy / sp6.distance * sp6.speed)
 
-        shot_points = [sp1,sp2,sp3,sp4,sp5,sp6]
 
-        def reset():
-            print("My_roc_gym.Jumpshot.shot_time reset")
-            My_roc_gym.Jumpshot.shot_time = 2
+
+                    if player.holding_ball == False:
+                        sp4.x += sp4.vel_x * 2
+                        sp4.y += sp4.vel_y * 2
+                        sp5.x += sp5.vel_x * 2
+                        sp5.y += sp5.vel_y * 2
+                        sp6.x += sp6.vel_x * 3
+                        sp6.y += sp6.vel_y * 3
+
+                except:
+                    pass
+
+
+
+
+
+                #print(sp1.speed,sp2.speed)
+           
+                '''for sp in shot_points:
+                    pygame.draw.circle(screen,(sp.color),(sp.x,sp.y),sp.radius,1)'''
+
+
+            def reset():
+
+                My_roc_gym.Jumpshot.time_past = 0
             
-            My_roc_gym.Jumpshot.startpoint1_x = player.x
-            My_roc_gym.Jumpshot.startpoint1_y = player.y + 20
-            My_roc_gym.Jumpshot.startpoint2_x = player.x
-            My_roc_gym.Jumpshot.startpoint2_y = player.y -200
 
-            My_roc_gym.Jumpshot.endpoint1_x = 100
-            My_roc_gym.Jumpshot.endpoint1_y = 250
+                box1.x = My_roc_gym.Player.Animaitons.shadow_x + 15
+                box2.x = My_roc_gym.Player.Animaitons.shadow_x
+                box3.x = 180
+                
+                box1.y = My_roc_gym.Player.Animaitons.shadow_y -110
+      
+                if My_roc_gym.Player.Animaitons.shadow_y > 300:
+                    box2.y = box4.y -120
+                    box3.y = box4.y -120
+                else:
+                    box2.y = box4.y -180
+                    box3.y = box4.y -180
+               
 
-            #goal height endpoint
-            My_roc_gym.Jumpshot.endpoint2_x = 200
-            My_roc_gym.Jumpshot.endpoint2_y = My_roc_gym.Jumpshot.startpoint2_y
+                sp1.x = box1.x
+                sp1.y = box1.y
+                sp1.dx = (box2.x - box1.x)
+                sp1.dy = (box2.y - box1.y)
+                sp1.distance = My_roc_gym.Jumpshot.Sp.get_distance(box1.x, box2.x, box1.y, box2.y)
+                sp1.speed = sp1.distance / (My_roc_gym.Jumpshot.shot_time * FPS)
+                sp1.vel_x = (sp1.dx / sp1.distance * sp1. speed)
+                sp1.vel_y = (sp1.dy / sp1.distance * sp1.speed)
 
-            My_roc_gym.Jumpshot.sp1.x = My_roc_gym.Jumpshot.startpoint1_x
-            My_roc_gym.Jumpshot.sp1.y = My_roc_gym.Jumpshot.startpoint1_y
-
-            My_roc_gym.Jumpshot.sp2.x = My_roc_gym.Jumpshot.startpoint2_x
-            My_roc_gym.Jumpshot.sp2.y = My_roc_gym.Jumpshot.startpoint2_y
-
-            My_roc_gym.Jumpshot.sp3.x = My_roc_gym.Jumpshot.endpoint2_x
-            My_roc_gym.Jumpshot.sp3.y = My_roc_gym.Jumpshot.endpoint2_y
-
-            My_roc_gym.Jumpshot.sp4.x = My_roc_gym.Jumpshot.sp1.x
-            My_roc_gym.Jumpshot.sp4.y = My_roc_gym.Jumpshot.sp1.y
-
-            My_roc_gym.Jumpshot.sp5.x = My_roc_gym.Jumpshot.sp2.x
-            My_roc_gym.Jumpshot.sp5.y = My_roc_gym.Jumpshot.sp2.y
-
-            My_roc_gym.Jumpshot.sp6.x = My_roc_gym.Jumpshot.sp4.x
-            My_roc_gym.Jumpshot.sp6.y = My_roc_gym.Jumpshot.sp4.y
-
-            # Recalculate distances and velocities
-            My_roc_gym.Jumpshot.sp4.dx = My_roc_gym.Jumpshot.sp2.x - My_roc_gym.Jumpshot.sp1.x
-            My_roc_gym.Jumpshot.sp4.dy = My_roc_gym.Jumpshot.sp2.y - My_roc_gym.Jumpshot.sp1.y
-            My_roc_gym.Jumpshot.sp4.distance = My_roc_gym.Jumpshot.get_sp_distance(My_roc_gym.Jumpshot.sp1.x, My_roc_gym.Jumpshot.sp2.x, My_roc_gym.Jumpshot.sp1.y, My_roc_gym.Jumpshot.sp2.y)
-            My_roc_gym.Jumpshot.sp4.speed = (My_roc_gym.Jumpshot.sp4.distance / (My_roc_gym.Jumpshot.shot_time * 120))
-            My_roc_gym.Jumpshot.sp4.vel_x = (My_roc_gym.Jumpshot.sp4.dx / My_roc_gym.Jumpshot.sp4.distance * My_roc_gym.Jumpshot.sp4.speed)
-            My_roc_gym.Jumpshot.sp4.vel_y = (My_roc_gym.Jumpshot.sp4.dy / My_roc_gym.Jumpshot.sp4.distance * My_roc_gym.Jumpshot.sp4.speed)
-
-            My_roc_gym.Jumpshot.sp5.dx = My_roc_gym.Jumpshot.sp3.x - My_roc_gym.Jumpshot.sp2.x
-            My_roc_gym.Jumpshot.sp5.dy = My_roc_gym.Jumpshot.sp3.y - My_roc_gym.Jumpshot.sp2.y
-            My_roc_gym.Jumpshot.sp5.distance = My_roc_gym.Jumpshot.get_sp_distance(My_roc_gym.Jumpshot.sp2.x, My_roc_gym.Jumpshot.sp3.x, My_roc_gym.Jumpshot.sp2.y, My_roc_gym.Jumpshot.sp3.y)
-            My_roc_gym.Jumpshot.sp5.speed = (My_roc_gym.Jumpshot.sp5.distance / (My_roc_gym.Jumpshot.shot_time * 120))
-            My_roc_gym.Jumpshot.sp5.vel_x = (My_roc_gym.Jumpshot.sp5.dx / My_roc_gym.Jumpshot.sp5.distance * My_roc_gym.Jumpshot.sp5.speed)
-            My_roc_gym.Jumpshot.sp5.vel_y = (My_roc_gym.Jumpshot.sp5.dy / My_roc_gym.Jumpshot.sp5.distance * My_roc_gym.Jumpshot.sp5.speed)
-
-            My_roc_gym.Jumpshot.sp6.dx = My_roc_gym.Jumpshot.sp5.x - My_roc_gym.Jumpshot.sp4.x
-            My_roc_gym.Jumpshot.sp6.dy = My_roc_gym.Jumpshot.sp5.y - My_roc_gym.Jumpshot.sp4.y
-
-            My_roc_gym.Jumpshot.sp6.distance = My_roc_gym.Jumpshot.get_sp_distance(My_roc_gym.Jumpshot.sp4.x, My_roc_gym.Jumpshot.sp5.x, My_roc_gym.Jumpshot.sp4.y, My_roc_gym.Jumpshot.sp5.y)
-            My_roc_gym.Jumpshot.sp6.speed = (My_roc_gym.Jumpshot.sp6.distance / (My_roc_gym.Jumpshot.shot_time * 120))
-            My_roc_gym.Jumpshot.sp6.vel_x = (My_roc_gym.Jumpshot.sp6.dx / My_roc_gym.Jumpshot.sp6.distance * My_roc_gym.Jumpshot.sp6.speed)
-            My_roc_gym.Jumpshot.sp6.vel_y = (My_roc_gym.Jumpshot.sp6.dy / My_roc_gym.Jumpshot.sp6.distance * My_roc_gym.Jumpshot.sp6.speed)
+                sp2.x = box2.x
+                sp2.y = box2.y
+                sp2.dx = (box3.x - box2.x)
+                sp2.dy = (box3.y - box2.y)
+                sp2.distance = My_roc_gym.Jumpshot.Sp.get_distance(box2.x, box3.x, box2.y, box3.y)
+                sp2.speed = sp2.distance / (My_roc_gym.Jumpshot.shot_time * FPS)
+                sp2.vel_x = (sp2.dx / sp2.distance * sp2.speed)
+                sp2.vel_y = (sp2.dy / sp2.distance * sp2.speed)
 
 
+                sp3.x = box3.x
+                sp3.y = box3.y
+                sp3.dx = (box4.x - box3.x)
+                sp3.dy = (box4.y - box3.y)
+                sp3.distance = My_roc_gym.Jumpshot.Sp.get_distance(box3.x, box4.x, box3.y, box4.y)
+                sp3.speed = sp3.distance / (My_roc_gym.Jumpshot.shot_time * FPS)
+                sp3.vel_x = (sp3.dx / sp3.distance * sp3.speed)
+                sp3.vel_y = (sp3.dy / sp3.distance * sp3.speed)
+                    
+   
+                        
+                sp4.x = sp1.x
+                sp4.y = sp1.y
+
+                sp5.x = sp2.x
+                sp5.y = sp2.y
+
+                sp6.x = sp1.x
+                sp6.y = sp1.y
+
+class The_roc():
+
+    def __init__(self,background_image,court_image,scale,fov):
+        super(The_roc,self).__init__()
+        self.scale = scale
+        self.fov = fov
+        self.original_image = pygame.image.load(background_image)
+        self.background_image = pygame.image.load(background_image)
+        self.background_image = pygame.transform.smoothscale(pygame.image.load(background_image).convert_alpha(),
+            (self.background_image.get_size()[0]/self.scale,self.background_image.get_size()[1]/self.scale))
+        self.court_image = court_image
+        self.background_rect = self.background_image.get_rect(topleft=(-500,0))
+
+    def draw_court():
+        screen.blit(lobby_court.background_image,lobby_court.background_rect) 
+
+    class Client():
+        
+        print("Searching for server...")
+
+        def __init__(self):
+            client_port = enet.peer.address.port 
+            peer = enet.peer
+            x_pos = 0
+            y_pos = 0
+            animation_num = 0 
+        
+        def server_connection():
+
+            client = enet.Host(None, 1, 0, 0, 0)
+            peer = client.connect(enet.Address(b"127.0.0.1", 12345), 1)
+            connected = False
+            event = client.service(0)
+
+            if event.type == enet.EVENT_TYPE_CONNECT:
+                connected = True
+                print("Connected to server")
+                peer.send(0,enet.Packet(b"Hello server!",enet.PACKET_FLAG_RELIABLE))
+
+            if event.type == enet.EVENT_TYPE_RECEIVE:
+                connected = False
+                server_message = event.packet.data
+                if str(server_message ) == "b'1003'":
+                    print("Error code 1003: Client kicked from server...")
+            
+    
 
 
+box1 = My_roc_gym.Jumpshot(My_roc_gym.Player.Animaitons.shadow_x,My_roc_gym.Player.Animaitons.shadow_y)
+box2 = My_roc_gym.Jumpshot(My_roc_gym.Player.Animaitons.shadow_x,(My_roc_gym.Player.Animaitons.shadow_y - 270))
+box3 = My_roc_gym.Jumpshot(180,(My_roc_gym.Player.Animaitons.shadow_y - 270))
+box4 = My_roc_gym.Jumpshot(125,140)
+shot_boxes = [box1,box2,box3,box4]
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+sp1 = My_roc_gym.Jumpshot.Sp((box1.x,box1.y),0,0,(255,255,255),My_roc_gym.Jumpshot.shot_time,(box2.x-box1.x),(box2.y-box1.y))
+sp2 = My_roc_gym.Jumpshot.Sp((box2.x,box2.y),0,0,(255,255,255),My_roc_gym.Jumpshot.shot_time,(box3.x-box2.x),(box3.y-box2.y))
+sp3 = My_roc_gym.Jumpshot.Sp((box3.x,box3.y),0,0,(255,255,255),My_roc_gym.Jumpshot.shot_time,(box4.x-box3.x),(box4.y-box3.y))
+sp4 = My_roc_gym.Jumpshot.Sp((sp1.x,sp1.y),0,0,(255,255,0),My_roc_gym.Jumpshot.shot_time,(sp2.x-sp1.x),(sp2.y-sp1.y))
+sp5 = My_roc_gym.Jumpshot.Sp((sp2.x,sp2.y),0,0,(255,255,0),My_roc_gym.Jumpshot.shot_time,(sp3.x-sp2.x),(sp3.y-sp2.y))
+sp6 = My_roc_gym.Jumpshot.Sp((box1.x,box1.y),0,0,(255,0,0),My_roc_gym.Jumpshot.shot_time,0,0)
+shot_points = [sp1,sp2,sp3,sp4,sp5,sp6]
+   
 Enviornment_sounds.park_ambience.set_volume(0.5)
 Enviornment_sounds.park_ambience.play(loops=-1)
 
 #song = random.choice(Music.songs)
-song = Music.hate_it_or_love_it
+song = Music.souls_of_mischief
 #print(song.__getattribute__)
 song.set_volume(0.1)
 #song.play() 
@@ -1115,11 +1172,12 @@ the_roc_window = Main_menu.Windows(600,80,180,330,"The Roc","lib/assets/menu_bac
 Main_menu.Windows.select_windows = [settings_window,roster_window,my_roc_window,my_season_window,the_roc_window,]
 
 my_roc_gym_background = My_roc_gym("lib/assets/my_roc_gym/my_gym_background.png",None,My_roc_gym.scale,My_roc_gym.Camera.fov)
+lobby_court = The_roc("lib/assets/my_roc_gym/lobby_park.png",None,1.7,My_roc_gym.Camera.fov)
 player = My_roc_gym.Player(None,(My_roc_gym.x_start_pos-200,My_roc_gym.y_start_pos,20,20),"lib/assets/my_roc_gym/player_example.png",1)
 stage_rects = [my_roc_gym_background.background_rect,My_roc_gym.goal_rect,My_roc_gym.front_goal_rect,
-               My_roc_gym.basket_rack_rect,*My_roc_gym.paint_rects,player.x]
+               My_roc_gym.basket_rack_rect,*My_roc_gym.paint_rects,*shot_points,box4,player.x]
 
-
+basketball = My_roc_gym.Basketball(300,300,"lib/assets/my_roc_gym/basketball.png")
 
 # Game loop 
 
@@ -1129,6 +1187,8 @@ running = True
 while running:
 
     screen.fill(gray_cement)
+
+    #print(game_state)
 
     #screen.blit(my_roc_gym.scaled_surf,(-270,-110))
    
@@ -1146,6 +1206,7 @@ while running:
 
     if game_state == "Main menu":
         Main_menu.Windows.draw_menu()
+        Enviornment_sounds.park_ambience.stop()
         for event in pygame.event.get():
 
             if event.type == pygame.QUIT:
@@ -1159,24 +1220,25 @@ while running:
                 if event.button == 0:
                     Main_menu.menu_select()
         
-
     if game_state == "My Gym":
         My_roc_gym.draw_gym()
         My_roc_gym.draw_detection_areas()
         My_roc_gym.Camera.offset_stage()
         My_roc_gym.Player.animate()
         My_roc_gym.Player.animation_move()
-        My_roc_gym.Jumpshot.set_points()
-
-        My_roc_gym.Jumpshot.draw_rects()
-        My_roc_gym.Jumpshot.draw_lines()
-        My_roc_gym.Jumpshot.Sps.shoot()
-    
+        #My_roc_gym.Jumpshot.draw_boxes()
+        My_roc_gym.Basketball.draw()
+        My_roc_gym.Jumpshot.Sp.shoot()
         My_roc_gym.Player.draw()
         My_roc_gym.Player.move()
         Pause_menu.draw_pause_menu()
-    
+        My_roc_gym.bg_sounds()
+     
 
+        if pygame.Rect.colliderect((pygame.Rect(box4.x,box4.y,5,5)),(pygame.Rect(sp6.x,sp6.y,10,10))) or basketball.rect.y > HEIGHT:
+            player.holding_ball = True
+            
+    
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -1191,7 +1253,8 @@ while running:
                 if event.key == pygame.K_ESCAPE:
                     Pause_menu.check_paused()
                 if event.key == pygame.K_e:
-                    My_roc_gym.Jumpshot.reset()
+                    My_roc_gym.Jumpshot.Sp.reset()
+
 
             if event.type == pygame.JOYBUTTONDOWN:
                 if event.button == 6:
@@ -1203,8 +1266,30 @@ while running:
                         Pause_menu.next_selected(1)
                     if event.button == 0:
                         Pause_menu.next_selected(None)
-    else:
-        Pause_menu.options_pressed = False
+                 
+    if game_state == "The Roc":
+        
+
+        The_roc.draw_court()
+        Pause_menu.draw_pause_menu()
+        The_roc.Client.server_connection()
+    
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            
+            if event.type == pygame.JOYBUTTONDOWN:
+                if event.button == 6:
+                    Pause_menu.check_paused()
+                if Pause_menu.options_pressed == True:
+                    if event.button == 11:
+                        Pause_menu.next_selected(-1)
+                    if event.button == 12:
+                        Pause_menu.next_selected(1)
+                    if event.button == 0:
+                        Pause_menu.next_selected(None)
+
+
                 
                     
   
